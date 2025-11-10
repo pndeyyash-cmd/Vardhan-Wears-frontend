@@ -1,4 +1,5 @@
-const CACHE_NAME = 'vardhan-wears-v10'; // <-- BUMPED TO v10
+// BUMP THE VERSION!
+const CACHE_NAME = 'vardhan-wears-v11'; 
 const URLS_TO_CACHE = [
   '/',
   '/index.html',
@@ -10,16 +11,18 @@ const URLS_TO_CACHE = [
   '/reset-password.html',
   '/manifest.json',
   '/images/icons/android-chrome-192x192.png',
-  '/images/icons/android-chrome-512x512.png'
+  '/images/icons/android-chrome-512x512.png',
+  // ADD THE NEW APPLE ICON
+  '/images/icons/apple-touch-icon.png' 
 ];
 
 // 1. Install the service worker
 self.addEventListener('install', (event) => {
-  console.log('Service Worker: Installing v10...');
+  console.log('Service Worker: Installing v11...'); // Update log
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('Service Worker: Caching app shell v10');
+        console.log('Service Worker: Caching app shell v11'); // Update log
         return cache.addAll(URLS_TO_CACHE);
       })
       .then(() => self.skipWaiting())
@@ -28,7 +31,7 @@ self.addEventListener('install', (event) => {
 
 // 2. Activate the service worker and clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker: Activating v10...');
+  console.log('Service Worker: Activating v11...'); // Update log
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
