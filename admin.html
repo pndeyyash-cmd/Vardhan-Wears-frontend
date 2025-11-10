@@ -333,7 +333,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <button type="submit" id="create-btn" class="w-full btn-primary">Create Product</button>
+                                        <button type="button" id="create-btn" class="w-full btn-primary">Create Product</button>
                                     </form>
                                 </section>
                             </div>
@@ -604,7 +604,11 @@
         });
 
         categoryForm.addEventListener('submit', handleCategoryFormSubmit);
-        createForm.addEventListener('submit', handleCreateFormSubmit);
+        
+        // ========== CHANGE 2: Listen for 'click' on the button, not 'submit' on the form ==========
+        createBtn.addEventListener('click', handleCreateFormSubmit);
+        // =======================================================================================
+
         editForm.addEventListener('submit', handleEditFormSubmit);
         variantForm.addEventListener('submit', handleVariantFormSubmit);
 
@@ -831,7 +835,7 @@
 
     // --- 7. CREATE NEW PRODUCT ---
     async function handleCreateFormSubmit(e) {
-        e.preventDefault();
+        e.preventDefault(); // Good practice to keep this, even with type="button"
         createBtn.disabled = true;
         createBtn.textContent = 'Saving...';
         try {
@@ -842,13 +846,14 @@
                 document.getElementById('create-image-2').files[0],
                 document.getElementById('create-image-3').files[0]
             ];
+            
+            // ========== CHANGE 3: Replace throw new Error with alert() and return ==========
             if (!files[0]) {
                 // Use alert() as requested and exit the function.
-                // The 'finally' block will still run to re-enable the button.
                 alert('Please upload at least one image to create the product.');
-                return;
+                return; // Stop the function here
             }
-            // =================== END FIX ===================
+            // =============================================================================
 
             if (document.getElementById('create-category').value === "") throw new Error('Please select a category.');
             if (currentCreateVariants.length === 0) throw new Error('Please add at least one product variant.');
