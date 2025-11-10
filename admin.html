@@ -222,7 +222,7 @@
                         </button>
                     </nav>
                 </div>
-            
+                
                 <div>
                     <div id="orders-tab-content" class="tab-content active">
                         <section id="manage-orders" class="p-6">
@@ -483,7 +483,7 @@
                 </form>
             </div>
         </div>
-    
+        
     <div id="message-box" class="border-gray-300">
         <p id="message-text" class="font-medium">Success!</p>
     </div>
@@ -791,7 +791,7 @@
                             </a>
                         </td>
                         <td class="font-medium">${product.name}</td>
-                <td>${categoryDisplay}</td>
+                        <td>${categoryDisplay}</td>
                         <td>₹${product.price.toFixed(2)}</td>
                         <td>${totalStock}</td>
                         <td class="space-x-2">
@@ -843,8 +843,10 @@
                 document.getElementById('create-image-3').files[0]
             ];
             if (!files[0]) {
-                // The 'required' attribute on the input handles this, but this is a good JS fallback.
-                throw new Error('Please upload at least one image to create the product.');
+                // Use alert() as requested and exit the function.
+                // The 'finally' block will still run to re-enable the button.
+                alert('Please upload at least one image to create the product.');
+                return;
             }
             // =================== END FIX ===================
 
