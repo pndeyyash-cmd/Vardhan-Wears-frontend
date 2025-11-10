@@ -1,6 +1,4 @@
-const CACHE_NAME = 'vardhan-wears-v3'; // <-- FIX 1: Version bumped
-// This is the list of files to cache.
-// We are caching the core pages, not every single product or order.
+const CACHE_NAME = 'vardhan-wears-v10'; // <-- BUMPED TO v10
 const URLS_TO_CACHE = [
   '/',
   '/index.html',
@@ -12,17 +10,16 @@ const URLS_TO_CACHE = [
   '/reset-password.html',
   '/manifest.json',
   '/images/icons/android-chrome-192x192.png',
-  '/images/icons/android-chrome-512x512.png',
-  '/images/icons/icon-maskable-512x512.png' // <-- FIX 2: Added maskable icon
+  '/images/icons/android-chrome-512x512.png'
 ];
 
 // 1. Install the service worker
 self.addEventListener('install', (event) => {
-  console.log('Service Worker: Installing...');
+  console.log('Service Worker: Installing v10...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('Service Worker: Caching app shell');
+        console.log('Service Worker: Caching app shell v10');
         return cache.addAll(URLS_TO_CACHE);
       })
       .then(() => self.skipWaiting())
@@ -31,14 +28,14 @@ self.addEventListener('install', (event) => {
 
 // 2. Activate the service worker and clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker: Activating...');
+  console.log('Service Worker: Activating v10...');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) { // If the cache name is not our new one...
+          if (cache !== CACHE_NAME) { 
             console.log('Service Worker: Clearing old cache');
-            return caches.delete(cache); // ...delete it.
+            return caches.delete(cache); 
           }
         })
       );
@@ -50,16 +47,13 @@ self.addEventListener('activate', (event) => {
 // 3. Fetch event (serve from cache first, then network)
 self.addEventListener('fetch', (event) => {
   // We only cache GET requests for our app pages.
-  // We DO NOT cache API requests (like /api/cart) because we always want live data.
   if (event.request.method === 'GET' && URLS_TO_CACHE.includes(new URL(event.request.url).pathname)) {
     event.respondWith(
       caches.match(event.request)
         .then((response) => {
-          // If we have it in cache, serve it.
           if (response) {
             return response;
           }
-          // Otherwise, fetch it from the network.
           return fetch(event.request);
         }
       )
