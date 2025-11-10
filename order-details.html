@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details - Vardhan's Wear</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        h1, h2, h3 { font-family: 'Playfair Display', serif; }
+        #message-box {
+            display: none;
+            position: fixed;
+            top: 5rem;
+            right: 1.5rem;
+            background-color: white;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            z-index: 100;
+            border-left-width: 4px;
+        }
+        /* Loading Spinner */
+        #order-loader {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-top: 10rem;
+        }
+        .spinner {
+            border: 4px solid #f9a8d4; /* pink-200 */
+            border-top: 4px solid #db2777; /* pink-600 */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    <link rel="manifest" href="/manifest.json">
+</head>
+<body class="bg-gray-50">
+
+    
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="text-2xl font-bold text-gray-800">Vardhan Wears</a>
+            
+            <div class="flex items-center space-x-4">
+                <a href="cart.html" class="p-2 text-gray-600 hover:text-gray-900">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="sr-only">Cart</span>
+                </a>
+                <a href="index.html" class="hidden md:block text-gray-600 hover:text-gray-900 font-medium">Home</a>
+                
+                <div class="relative hidden md:block">
+                    <button onclick="toggleDesktopMenu()" id="desktop-menu-btn" class="text-gray-800 focus:outline-none text-xl p-2 rounded-md hover:bg-gray-100">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div id="desktop-menu-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
+                        </div>
+                </div>
+
+                <div class="md:hidden">
+                    <button id="menu-btn" class="text-gray-800 focus:outline-none">
+                        <i class="fas fa-bars fa-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+        </nav>
+        <div id="mobile-nav-links" class="md:hidden hidden bg-white">
+             </div>
+    </header>
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 mt-8 pb-16">
+        
+        <a href="profile.html" class="inline-flex items-center text-pink-600 hover:text-pink-800 font-medium mb-4">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Back to Your Profile & Orders
+        </a>
+
+        <div id="order-loader">
+            <div class="spinner"></div>
+            <p class="text-xl font-medium mt-4 text-gray-600">Loading Order Details...</p>
+        </div>
+
+        <div id="order-error" class="hidden text-center py-10">
+            <h2 class="text-2xl font-bold text-red-600">Error Loading Order</h2>
+            <p id="error-message-text" class="text-gray-600 mt-2">Could not find or access this order.</p>
+            <a href="profile.html" class="mt-4 inline-block bg-pink-600 text-white font-bold py-2 px-4 rounded-lg">Go Back</a>
+        </div>
+
+        <div id="order-details-content" class="hidden">
+            
+            <div class="bg-gradient-to-b from-white to-pink-50 rounded-lg shadow-lg p-6 mb-8 border border-pink-100">
+                <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900">Order Details</h1>
+                        <p class="text-sm text-gray-600 mt-1">
+                            Placed on <span id="order-date-display" class="font-medium">...</span>
+                        </p>
+                    </div>
+                    <div class="text-left md:text-right">
+                        <p class="text-sm text-gray-600">Order ID:</p>
+                        <div class="flex items-center justify-start md:justify-end gap-2">
+                            <span id="order-id-display" class="font-mono text-gray-800">...</span>
+                            <i onclick="copyToClipboard(document.getElementById('order-id-display').textContent, 'Order ID Copied!')" 
+                               class="fas fa-copy text-gray-500 hover:text-pink-600 cursor-pointer" 
+                               title="Copy Order ID"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <div class="lg:col-span-2 space-y-6">
+                    
+                    <div class="bg-white rounded-lg shadow-lg border border-gray-200">
+                        <div class="p-6 border-b border-gray-200">
+                            <h2 class="text-2xl font-bold text-gray-900" id="order-status-display">...</h2>
+                            <p class="text-sm text-gray-600 mt-1" id="order-status-subtext">...</p>
+                        </div>
+                        
+                        <div id="order-items-container" class="space-y-6 p-6">
+                            </div>
+                    </div>
+
+                    <div id="order-actions-container" class="bg-gradient-to-b from-white to-pink-50 rounded-lg shadow-lg p-6 flex flex-col md:flex-row gap-4 border border-pink-100">
+                        </div>
+                </div>
+
+                <div class="lg:col-span-1 space-y-6">
+                    
+                    <div class="bg-gradient-to-b from-white to-pink-50 rounded-lg shadow-lg p-6 border border-pink-100">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">Shipping & Payment</h2>
+                        
+                        <h3 class="text-md font-semibold text-gray-800">Shipping Address</h3>
+                        <div id="shipping-address-container" class="text-gray-700 space-y-1 text-sm mt-2 mb-4 pb-4 border-b border-pink-200">
+                        </div>
+
+                        <h3 class="text-md font-semibold text-gray-800">Payment Details</h3>
+                        <div class="space-y-2 mt-2 text-sm">
+                            <div>
+                                <h4 class="font-medium text-gray-600">Payment Method</h4>
+                                <p id="payment-method-display" class="font-semibold text-gray-800 uppercase">...</p>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-600">Transaction ID</h4>
+                                <div class="flex items-center gap-2">
+                                    <p id="payment-id-display" class="font-mono font-semibold text-gray-800 text-sm break-words">...</p>
+                                    <i onclick="copyToClipboard(document.getElementById('payment-id-display').textContent, 'Transaction ID Copied!')"
+                                       class="fas fa-copy text-gray-500 hover:text-pink-600 cursor-pointer" 
+                                       title="Copy Transaction ID"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-b from-white to-pink-50 rounded-lg shadow-lg p-6 border border-pink-100">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">Order Summary</h2>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-gray-700">
+                                <span>Subtotal:</span>
+                                <span id="order-subtotal-display" class="font-medium text-pink-600">...</span>
+                            </div>
+                            <div class="flex justify-between text-gray-700">
+                                <span>Shipping:</span>
+                                <span id="order-shipping-display">...</span>
+                            </div>
+                            <div class="flex justify-between text-xl font-bold text-gray-900 border-t border-pink-200 pt-2 mt-2">
+                                <span>Total:</span>
+                                <span id="order-total-display" class="text-pink-600">...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="message-box">
+        <p id="message-text" class="font-medium"></p>
+    </div>
+
+    <script>
+        // =================== DEPLOYMENT FIX: Add API_URL ===================
+        const API_URL = 'https://vardhan-wears-api.onrender.com';
+        // ===================================================================
+
+        // === Global Variables ===
+        const CLOUDINARY_CLOUD_NAME = 'dbhtu0kzg'; 
+        const CLOUDINARY_UPLOAD_PRESET = 'vardhan_uploads'; 
+        let currentUser = null;
+        let currentOrder = null; 
+        const token = localStorage.getItem('token');
+        const orderId = new URLSearchParams(window.location.search).get('id');
+
+        // --- Menu Toggles ---
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileNavLinks = document.getElementById('mobile-nav-links'); 
+        menuBtn.addEventListener('click', () => {
+            mobileNavLinks.classList.toggle('hidden');
+        });
+        function toggleDesktopMenu() {
+            document.getElementById('desktop-menu-dropdown').classList.toggle('hidden');
+        }
+        window.onclick = function(event) {
+            if (!event.target.matches('#desktop-menu-btn') && !event.target.closest('#desktop-menu-btn')) {
+                const dropdown = document.getElementById('desktop-menu-dropdown');
+                if (dropdown && !dropdown.classList.contains('hidden')) {
+                    dropdown.classList.add('hidden');
+                }
+            }
+        }
+
+        // --- Auth Logic ---
+        async function checkAuth() {
+            const desktopDropdown = document.getElementById('desktop-menu-dropdown');
+            let desktopLinks = '';
+            let mobileLinks = '';
+            
+            desktopLinks = `
+                <a href="index.html#collection" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Products</a>
+                <a href="index.html#about" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">About</a>
+                <a href="index.html#contact" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Contact</a>
+                <hr class="my-1 border-gray-100">
+            `;
+            
+            mobileLinks = `
+                <a href="index.html#home" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Home</a>
+                <a href="index.html#collection" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Products</a>
+                <a href="index.html#about" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">About</a>
+                <a href="index.html#contact" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Contact</a>
+                <hr class="my-1 border-gray-100">
+            `;
+
+            if (!token) {
+                window.location.href = 'login.html'; 
+                return false; 
+            } 
+            
+            try {
+                // =================== DEPLOYMENT FIX: Use API_URL ===================
+                const res = await fetch(`${API_URL}/api/auth/me`, { 
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                // ===================================================================
+                if (!res.ok) {
+                    localStorage.removeItem('token');
+                    window.location.href = 'login.html'; 
+                    return false; 
+                }
+                currentUser = await res.json(); 
+                
+                // =================== JAVASCRIPT FIX: Removed Logout Button ===================
+                desktopLinks += `
+                        <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-blue-600 font-medium hover:bg-gray-100">
+                            <i class="fas fa-user-circle w-5 mr-2"></i> My Profile
+                        </a>
+                        ${currentUser.isAdmin ? '<a href="admin.html" class="block px-4 py-2 text-sm text-yellow-600 font-bold hover:bg-gray-100">Admin Panel</a>' : ''}
+                `;
+                mobileLinks += `
+                        <a href="profile.html" class="flex items-center block py-2 px-6 text-sm text-blue-600 font-medium hover:bg-gray-100">
+                            <i class="fas fa-user-circle w-5 mr-2"></i> My Profile
+                        </a>
+                        ${currentUser.isAdmin ? '<a href="admin.html" class="block py-2 px-6 text-sm text-yellow-600 font-bold hover:bg-gray-100">Admin Panel</a>' : ''}
+                `;
+                // =================== END FIX ===================
+                
+                desktopDropdown.innerHTML = desktopLinks;
+                mobileNavLinks.innerHTML = mobileLinks;
+                return true; 
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+                return false; 
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token'); 
+            window.location.href = 'index.html'; 
+        }
+        
+        // --- Page Logic ---
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // ===============================================
+            // === PWA SERVICE WORKER REGISTRATION START ===
+            // ===============================================
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('Service Worker registered successfully:', registration);
+                    })
+                    .catch((error) => {
+                        console.error('Service Worker registration failed:', error);
+                    });
+            }
+            // ===============================================
+            // === PWA SERVICE WORKER REGISTRATION END ===
+            // ===============================================
+
+            const authed = await checkAuth();
+            if (authed) {
+                await loadOrderDetails();
+            }
+        });
+
+        async function loadOrderDetails() {
+            const loader = document.getElementById('order-loader');
+            const content = document.getElementById('order-details-content');
+            const errorContainer = document.getElementById('order-error');
+
+            if (!orderId) {
+                window.location.href = 'profile.html';
+                return;
+            }
+
+            loader.style.display = 'flex';
+            content.classList.add('hidden');
+            errorContainer.classList.add('hidden');
+
+            try {
+                // =================== DEPLOYMENT FIX: Use API_URL ===================
+                const res = await fetch(`${API_URL}/api/orders/${orderId}`, { 
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                // ===================================================================
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.message || `Error: ${res.status}`);
+                }
+
+                currentOrder = await res.json();
+                renderOrderDetails(currentOrder);
+                
+                loader.style.display = 'none';
+                content.classList.remove('hidden');
+
+            } catch (error) {
+                console.error('Failed to load order:', error);
+                loader.style.display = 'none';
+                document.getElementById('error-message-text').textContent = error.message;
+                errorContainer.classList.remove('hidden');
+            }
+        }
+
+        function renderOrderDetails(order) {
+            // 1. Top Bar
+            document.getElementById('order-id-display').textContent = order._id;
+            document.getElementById('order-date-display').textContent = new Date(order.createdAt).toLocaleString('en-IN', { dateStyle: 'long', timeStyle: 'short' });
+
+            // 2. Status Box
+            const { statusText, statusSubtext, statusColor } = getOrderStatus(order);
+            document.getElementById('order-status-display').textContent = statusText;
+            document.getElementById('order-status-display').className = `text-2xl font-bold ${statusColor}`;
+            document.getElementById('order-status-subtext').textContent = statusSubtext;
+
+            // 3. Shipping Address
+            const shipping = order.shippingAddress;
+            document.getElementById('shipping-address-container').innerHTML = `
+                <p class="font-semibold">${shipping.fullName}</p>
+                <p>${shipping.address}</p>
+                <p>${shipping.city}, ${shipping.state} - ${shipping.postalCode}</p>
+                <p>Phone: ${shipping.countryCode} ${shipping.phone}</p>
+            `;
+
+            // 4. Payment Details
+            document.getElementById('payment-method-display').textContent = order.paymentDetails?.paymentMethod || 'N/A';
+            document.getElementById('payment-id-display').textContent = order.paymentDetails?.razorpayPaymentId || 'N/A';
+            
+            // 5. Order Summary
+            document.getElementById('order-subtotal-display').textContent = `₹${order.totalPrice.toFixed(2)}`;
+            document.getElementById('order-shipping-display').textContent = `₹0.00`; // Shipping cost needs calculation if implemented
+            document.getElementById('order-total-display').textContent = `₹${order.totalPrice.toFixed(2)}`;
+
+            // 6. Order Items
+            const itemsContainer = document.getElementById('order-items-container');
+            itemsContainer.innerHTML = '';
+            order.orderItems.forEach(item => {
+                itemsContainer.innerHTML += `
+                    <div class="flex gap-4 border-b border-gray-200 pb-6 last:border-b-0 last:pb-0">
+                        <a href="product.html?id=${item.product}" class="flex-shrink-0">
+                            <img src="${item.image}" alt="${item.name}" class="w-20 h-20 rounded-md object-cover hover:opacity-80 transition-opacity">
+                        </a>
+                        <div class="flex-1">
+                            <a href="product.html?id=${item.product}" class="font-semibold text-gray-800 hover:text-pink-600 transition-colors">${item.name}</a>
+                            <p class="text-sm text-gray-600">Color: ${item.colorName}</p>
+                            <p class="text-sm text-gray-600">Size: ${item.size}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-pink-600">₹${item.price.toFixed(2)}</p>
+                            <p class="text-sm text-gray-600">Qty: ${item.quantity}</p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // 7. Order Actions
+            const actionsContainer = document.getElementById('order-actions-container');
+            actionsContainer.innerHTML = ''; // Clear
+            if (!order.isPaid && !order.isCancelled) {
+                actionsContainer.innerHTML = `
+                    <button class="text-sm font-medium bg-red-600 text-white py-3 px-5 rounded-lg hover:bg-red-700" onclick="handleCancel(event, '${order._id}')">
+                        Cancel Order
+                    </button>
+                    <button class="text-sm font-medium bg-pink-600 text-white py-3 px-5 rounded-lg hover:bg-pink-700" onclick="handleRepay(event, '${order._id}')">
+                        Repay Now (₹${order.totalPrice.toFixed(2)})
+                    </button>
+                `;
+            } else {
+                actionsContainer.classList.add('hidden'); // Hide the whole box if no actions
+            }
+        }
+
+        function getOrderStatus(order) {
+            let statusText, statusSubtext, statusColor;
+            
+            if (order.isCancelled) {
+                statusText = 'Cancelled';
+                statusSubtext = 'This order has been cancelled.';
+                statusColor = 'text-gray-500';
+            } else if (!order.isPaid) {
+                statusText = 'Awaiting Payment';
+                statusSubtext = 'Please complete your payment to proceed.';
+                statusColor = 'text-yellow-600';
+            } else if (order.isPaid && !order.isDelivered) {
+                const orderDate = new Date(order.createdAt);
+                const estimatedDeliveryDate = new Date(new Date(order.createdAt).setDate(orderDate.getDate() + 7));
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                estimatedDeliveryDate.setHours(0, 0, 0, 0);
+
+                const tomorrow = new Date();
+                tomorrow.setDate(today.getDate() + 1);
+                tomorrow.setHours(0,0,0,0);
+
+                if (today.getTime() === estimatedDeliveryDate.getTime()) {
+                    statusText = 'Arriving Today';
+                    statusSubtext = 'Your order is out for delivery.';
+                    statusColor = 'text-pink-600';
+                } else if (tomorrow.getTime() === estimatedDeliveryDate.getTime()) {
+                    statusText = 'Arriving Tomorrow';
+                    statusSubtext = `Your order is expected to arrive by ${tomorrow.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' })}`;
+                    statusColor = 'text-green-600';
+                } else if (today > estimatedDeliveryDate) {
+                    statusText = 'Delayed';
+                    statusSubtext = 'We are working to get your order to you as soon as possible.';
+                    statusColor = 'text-red-600';
+                } else {
+                    const dateString = estimatedDeliveryDate.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
+                    statusText = `Arriving by ${dateString}`;
+                    statusSubtext = 'Your order is confirmed and being processed.';
+                    statusColor = 'text-green-600';
+                }
+            } else { // Paid and Delivered
+                const dateString = new Date(order.deliveredAt).toLocaleDateString('en-IN', { dateStyle: 'long' });
+                statusText = `Delivered on ${dateString}`;
+                statusSubtext = 'Thank you for shopping with Vardhan Wears!';
+                statusColor = 'text-pink-600'; 
+            }
+            return { statusText, statusSubtext, statusColor };
+        }
+
+        // --- Action Functions ---
+
+        async function handleRepay(event, orderId) {
+            event.preventDefault(); 
+            const repayButton = event.target;
+            repayButton.disabled = true;
+            repayButton.textContent = 'Processing...';
+            try {
+                // =================== DEPLOYMENT FIX: Use API_URL ===================
+                const res = await fetch(`${API_URL}/api/orders/${orderId}/repay`, { 
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                // ===================================================================
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.message || 'Failed to create repayment order.');
+                }
+                const { orderId: dbOrderId, razorpayOrderId, amount, currency, key } = await res.json();
+                const options = {
+                    key: key,
+                    amount: amount,
+                    currency: currency,
+                    name: "Vardhan's Wear",
+                    description: `Repayment for Order ID: ...${dbOrderId.substr(-6)}`,
+                    order_id: razorpayOrderId,
+                    handler: async function (response) {
+                        await verifyPayment(response, dbOrderId);
+                    },
+                    prefill: { name: currentUser.name, email: currentUser.email },
+                    theme: { color: "#db2777" }
+                };
+                const rzp = new Razorpay(options);
+                rzp.on('payment.failed', function (response) {
+                    console.error(response);
+                    showMessage(`Payment failed: ${response.error.description}`, 'error');
+                    repayButton.disabled = false;
+                    repayButton.textContent = `Repay Now (₹${currentOrder.totalPrice.toFixed(2)})`;
+                });
+                rzp.open();
+            } catch (error) {
+                console.error('Error during repay:', error);
+                showMessage(error.message, 'error');
+                repayButton.disabled = false;
+                repayButton.textContent = `Repay Now (₹${currentOrder.totalPrice.toFixed(2)})`;
+            }
+        }
+
+        async function handleCancel(event, orderId) {
+            event.preventDefault(); 
+            if (!confirm('Are you sure you want to cancel this pending order? This action cannot be undone.')) {
+                return;
+            }
+            try {
+                // =================== DEPLOYMENT FIX: Use API_URL ===================
+                const res = await fetch(`${API_URL}/api/orders/${orderId}/cancel`, { 
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                // ===================================================================
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.message || 'Failed to cancel order.');
+                }
+                showMessage('Order successfully cancelled.', 'success');
+                await loadOrderDetails(); // Refresh the page details
+            } catch (error) {
+                console.error('Error cancelling order:', error);
+                showMessage(error.message, 'error');
+            }
+        }
+
+        async function verifyPayment(paymentResponse, ourOrderId) {
+            try {
+                const verificationData = {
+                    razorpay_order_id: paymentResponse.razorpay_order_id,
+                    razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                    razorpay_signature: paymentResponse.razorpay_signature,
+                    order_id: ourOrderId 
+                };
+                // =================== DEPLOYMENT FIX: Use API_URL ===================
+                const verifyRes = await fetch(`${API_URL}/api/orders/verify`, { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(verificationData)
+                });
+                // ===================================================================
+                if (!verifyRes.ok) {
+                    throw new Error('Payment verification failed.');
+                }
+                showMessage('Payment successful!', 'success');
+                await loadOrderDetails(); // Refresh the page details
+            } catch (error) {
+                console.error('Error verifying payment:', error);
+                showMessage(error.message, 'error');
+            }
+        }
+
+        // --- Message Box ---
+        function showMessage(message, type = 'success') {
+            const messageBox = document.getElementById('message-box');
+            const messageText = document.getElementById('message-text');
+            messageText.textContent = message;
+            if (type === 'error') {
+                messageBox.style.borderLeftColor = '#ef4444'; // red-500
+            } else if (type === 'info') {
+                messageBox.style.borderLeftColor = '#3b82f6'; // blue-500
+            } else {
+                messageBox.style.borderLeftColor = '#10b981'; // green-500
+            }
+            messageBox.style.display = 'block';
+            setTimeout(() => {
+                messageBox.style.display = 'none';
+            }, 3000);
+        }
+        
+        // --- Copy to Clipboard Function ---
+        function copyToClipboard(text, message) {
+            if (!navigator.clipboard) {
+                try {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    showMessage(message, 'success');
+                } catch (err) {
+                    showMessage('Failed to copy text', 'error');
+                }
+                return;
+            }
+            navigator.clipboard.writeText(text).then(() => {
+                showMessage(message, 'success');
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+                showMessage('Failed to copy text', 'error');
+            });
+        }
+
+        // --- Make functions globally accessible ---
+        window.toggleDesktopMenu = toggleDesktopMenu;
+        window.logout = logout;
+        window.handleRepay = handleRepay;
+        window.handleCancel = handleCancel;
+        window.copyToClipboard = copyToClipboard; 
+
+    </script>
+</body>
+</html>

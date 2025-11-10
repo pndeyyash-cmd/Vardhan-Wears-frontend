@@ -1,0 +1,5 @@
+# Ignore the entire backend folder
+/backend
+
+# Ignore any node_modules that might be in the root
+/node_modules

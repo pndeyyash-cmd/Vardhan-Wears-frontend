@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - Vardhan's Wear</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+        }
+        /* FIX #1: Added 'appearance: none' */
+        input[type='number']::-webkit-inner-spin-button,
+        input[type='number']::-webkit-outer-spin-button {
+            -webkit-appearance: none; 
+            appearance: none; 
+            margin: 0;
+        }
+        /* FIX #2: Added 'appearance: textfield' */
+        input[type=number] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+        #cart-loader {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-top: 8rem;
+        }
+        .spinner {
+            border: 4px solid #f9a8d4; /* pink-200 */
+            border-top: 4px solid #db2777; /* pink-600 */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .unavailable-item .remove-btn {
+            opacity: 1 !important;
+        }
+        /* Style for the new manual quantity input */
+        .quantity-input {
+            width: 3rem; /* 48px */
+            height: 2rem; /* 32px */
+            text-align: center;
+            border-left: 1px solid #e5e7eb; /* border-gray-200 */
+            border-right: 1px solid #e5e7eb; /* border-gray-200 */
+        }
+        .quantity-input:focus {
+            outline: 2px solid #db2777; /* pink-600 */
+            outline-offset: -1px;
+            z-index: 10;
+            position: relative;
+        }
+        #message-box {
+            display: none;
+            position: fixed;
+            top: 5rem;
+            right: 1.5rem;
+            background-color: white;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            z-index: 50;
+            border-left-width: 4px;
+        }
+    </style>
+    <link rel="manifest" href="/manifest.json">
+</head>
+<body class="bg-gray-50">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="text-2xl font-bold text-gray-800">Vardhan Wears</a>
+            
+            <div class="flex items-center space-x-4">
+                <a href="index.html" class="hidden md:block text-gray-600 hover:text-gray-900 font-medium">Home</a>
+                
+                <div class="relative hidden md:block">
+                    <button onclick="toggleDesktopMenu()" id="desktop-menu-btn" class="text-gray-800 focus:outline-none text-xl p-2 rounded-md hover:bg-gray-100">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div id="desktop-menu-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
+                        </div>
+                </div>
+
+                <div class="md:hidden">
+                    <button id="menu-btn" class="text-gray-800 focus:outline-none">
+                        <i class="fas fa-bars fa-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+        </nav>
+        <div id="mobile-nav-links" class="md:hidden hidden bg-white">
+             </div>
+    </header>
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 mt-8 pb-16">
+        <h1 class="text-3xl font-bold text-gray-900 mb-6">Your Shopping Cart</h1>
+        
+        <div id="cart-loader" class="hidden">
+            <div class="spinner"></div>
+            <p class="text-xl font-medium mt-4 text-gray-600">Loading Cart...</p>
+        </div>
+        
+        <div id="cart-empty" class="hidden text-center bg-gradient-to-b from-white to-pink-50 p-12 rounded-lg shadow-lg border border-pink-100">
+            <h2 class="text-xl font-medium text-gray-700">Your cart is empty.</h2>
+            <a href="index.html" class="mt-4 inline-block bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-6 rounded-lg transition-colors">
+                Continue Shopping
+            </a>
+        </div>
+
+        <div id="cart-container" class="lg:grid lg:grid-cols-3 lg:gap-8 hidden">
+            <section class="lg:col-span-2 space-y-6">
+                <div class="bg-gradient-to-b from-white to-pink-50 rounded-lg shadow-lg border border-pink-100 transition-all duration-300 hover:shadow-xl">
+                    <h2 class="text-xl font-semibold text-gray-900 p-4 border-b border-pink-100">Available Items</h2>
+                    <div id="cart-items-available">
+                        </div>
+                </div>
+                
+                <div id="unavailable-section" class="hidden">
+                    <div class="bg-gradient-to-b from-white to-gray-100 rounded-lg shadow-lg border border-gray-200">
+                        <h2 class="text-xl font-semibold text-gray-900 p-4 border-b border-gray-200">Unavailable Items</h2>
+                        <div id="cart-items-unavailable">
+                            </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="order-summary" class="lg:col-span-1 mt-8 lg:mt-0">
+                <div class="bg-gradient-to-b from-white to-pink-50 rounded-lg shadow-lg p-6 sticky top-24 border border-pink-100">
+                    <h2 class="text-xl font-semibold text-gray-900 border-b border-pink-200 pb-4">Order Summary</h2>
+                    <div class="space-y-2 mt-4">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Subtotal</span>
+                            <span id="summary-subtotal" class="font-medium text-gray-900">₹0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Shipping</span>
+                            <span id="summary-shipping" class="font-medium text-gray-900">₹0.00</span>
+                        </div>
+                        
+                        <p id="shipping-note" class="text-xs text-pink-600 font-medium text-right -mt-1">Free shipping on orders over ₹2000.00</p>
+
+                        <div class="flex justify-between border-t border-pink-200 pt-4 mt-2">
+                            <span class="text-lg font-bold text-gray-900">Total</span>
+                            <span id="summary-total" class="text-lg font-bold text-gray-900">₹0.00</span>
+                        </div>
+                    </div>
+                    
+                    <p id="cart-warning-message" class="hidden text-sm text-red-600 font-medium text-center mt-4"></p>
+                    
+                    <button id="checkout-btn" class="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 mt-6 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        Proceed to Checkout
+                    </button>
+                </div>
+            </section>
+        </div>
+    </main>
+    
+    <div id="message-box">
+        <p id="message-text" class="font-medium">Error</p>
+    </div>
+
+    <script>
+        // =================== DEPLOYMENT FIX: Add API_URL ===================
+        const API_URL = 'https://vardhan-wears-api.onrender.com';
+        // ===================================================================
+
+        // --- Global State ---
+        const token = localStorage.getItem('token');
+        let currentCart = []; // The *true* state of the cart (either from API or validated localStorage)
+        let debounceTimer; // Timer for manual quantity input
+
+        // --- UI Element References ---
+        const loaderEl = document.getElementById('cart-loader');
+        const emptyEl = document.getElementById('cart-empty');
+        const containerEl = document.getElementById('cart-container');
+        const availableContainer = document.getElementById('cart-items-available');
+        const unavailableContainer = document.getElementById('cart-items-unavailable');
+        const unavailableSection = document.getElementById('unavailable-section');
+        const summarySubtotal = document.getElementById('summary-subtotal');
+        const summaryShipping = document.getElementById('summary-shipping');
+        const shippingNote = document.getElementById('shipping-note');
+        const summaryTotal = document.getElementById('summary-total');
+        const checkoutBtn = document.getElementById('checkout-btn');
+        const warningMessage = document.getElementById('cart-warning-message');
+
+        // --- Menu Toggles & Auth Logic (Unchanged) ---
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileNavLinks = document.getElementById('mobile-nav-links'); 
+        menuBtn.addEventListener('click', () => { mobileNavLinks.classList.toggle('hidden'); });
+        function toggleDesktopMenu() { document.getElementById('desktop-menu-dropdown').classList.toggle('hidden'); }
+        window.onclick = function(event) {
+            if (!event.target.matches('#desktop-menu-btn') && !event.target.closest('#desktop-menu-btn')) {
+                const dropdown = document.getElementById('desktop-menu-dropdown');
+                if (dropdown && !dropdown.classList.contains('hidden')) {
+                    dropdown.classList.add('hidden');
+                }
+            }
+        }
+        // Make sure it's globally accessible
+        window.toggleDesktopMenu = toggleDesktopMenu;
+
+        async function checkAuth() {
+            const desktopDropdown = document.getElementById('desktop-menu-dropdown');
+            let desktopLinks = '';
+            let mobileLinks = '';
+            desktopLinks = `
+                <a href="index.html#collection" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Products</a>
+                <a href="index.html#about" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">About</a>
+                <a href="index.html#contact" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Contact</a>
+                <hr class="my-1 border-gray-100">
+            `;
+            mobileLinks = `
+                <a href="index.html#home" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Home</a>
+                <a href="index.html#collection" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Products</a>
+                <a href="index.html#about" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">About</a>
+                <a href="index.html#contact" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Contact</a>
+                <hr class="my-1 border-gray-100">
+            `;
+            if (!token) {
+                desktopLinks += `
+                    <a href="login.html" class="block px-4 py-2 text-sm text-pink-600 font-bold hover:bg-pink-50">Login</a>
+                    <a href="register.html" class="block px-4 py-2 text-sm text-pink-600 font-bold hover:bg-pink-50">Register</a>
+                `;
+                mobileLinks += `
+                    <a href="login.html" class="block py-2 px-6 text-sm text-pink-600 font-bold hover:bg-pink-50">Login</a>
+                    <a href="register.html" class="block py-2 px-6 text-sm text-pink-600 font-bold hover:bg-pink-50">Register</a>
+                `;
+            } else {
+                try {
+                    // =================== DEPLOYMENT FIX: Use API_URL ===================
+                    const res = await fetch(`${API_URL}/api/auth/me`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    // ===================================================================
+                    if (!res.ok) {
+                        localStorage.removeItem('token');
+                        checkAuth(); 
+                        return;
+                    }
+                    const user = await res.json();
+                    
+                    desktopLinks += `
+                        <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-blue-600 font-medium hover:bg-gray-100">
+                            <i class="fas fa-user-circle w-5 mr-2"></i> My Profile
+                        </a>
+                        ${user.isAdmin ? '<a href="admin.html" class="block px-4 py-2 text-sm text-yellow-600 font-bold hover:bg-gray-100">Admin Panel</a>' : ''}
+                    `;
+                    mobileLinks += `
+                        <a href="profile.html" class="flex items-center block py-2 px-6 text-sm text-blue-600 font-medium hover:bg-gray-100">
+                            <i class="fas fa-user-circle w-5 mr-2"></i> My Profile
+                        </a>
+                        ${user.isAdmin ? '<a href="admin.html" class="block py-2 px-6 text-sm text-yellow-600 font-bold hover:bg-gray-100">Admin Panel</a>' : ''}
+                    `;
+                } catch (error) {
+                    console.error('Auth check failed:', error);
+                    localStorage.removeItem('token');
+                    checkAuth(); 
+                }
+            }
+            document.getElementById('desktop-menu-dropdown').innerHTML = desktopLinks;
+            mobileNavLinks.innerHTML = mobileLinks;
+        }
+
+        function logout() {
+            localStorage.removeItem('token'); 
+            localStorage.removeItem('vardhansCart');
+            window.location.href = 'index.html'; 
+        }
+
+        // --- V3.1 "Smart" Cart Logic ---
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // ===============================================
+            // === PWA SERVICE WORKER REGISTRATION START ===
+            // ===============================================
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('Service Worker registered successfully:', registration);
+                    })
+                    .catch((error) => {
+                        console.error('Service Worker registration failed:', error);
+                    });
+            }
+            // ===============================================
+            // === PWA SERVICE WORKER REGISTRATION END ===
+            // ===============================================
+
+            checkAuth();
+            loadCart(); // This is the main "dispatcher" function
+            checkoutBtn.addEventListener('click', () => {
+                window.location.href = 'checkout.html';
+            });
+        });
+
+        /**
+         * Main "dispatcher" function.
+         */
+        function loadCart() {
+            if (token) {
+                loaderEl.classList.remove('hidden');
+                loaderEl.querySelector('p').textContent = 'Loading Your Cart...';
+                loadLoggedInCart();
+            } else {
+                loaderEl.classList.remove('hidden');
+                loaderEl.querySelector('p').textContent = 'Validating Guest Cart...';
+                loadGuestCart();
+            }
+        }
+
+        /**
+         * Loads cart from the API for a LOGGED-IN user.
+         */
+        async function loadLoggedInCart() {
+            try {
+                // =================== DEPLOYMENT FIX: Use API_URL ===================
+                const res = await fetch(`${API_URL}/api/cart`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                // ===================================================================
+                if (!res.ok) {
+                    throw new Error('Failed to fetch your cart from the server.');
+                }
+                const data = await res.json();
+                
+                currentCart = data.items.map(item => ({
+                    product: item.product,
+                    name: item.name,
+                    price: item.price,
+                    image: item.image,
+                    size: item.size,
+                    colorName: item.colorName,
+                    quantity: item.quantity,
+                    realStock: item.realStock,
+                    isOutOfStock: item.isOutOfStock,
+                    hasSufficientStock: (item.realStock >= item.quantity),
+                    isLowStock: item.isLowStock
+                }));
+                
+                renderCart(currentCart);
+
+            } catch (error) {
+                console.error(error);
+                showMessage(error.message, 'error');
+                showCartError();
+            }
+        }
+
+        /**
+         * Loads cart from localStorage for a GUEST.
+         */
+        async function loadGuestCart() {
+            const guestCart = JSON.parse(localStorage.getItem('vardhansCart')) || [];
+
+            if (guestCart.length === 0) {
+                showCartEmpty();
+                return;
+            }
+
+            try {
+                // =================== DEPLOYMENT FIX: Use API_URL ===================
+                const res = await fetch(`${API_URL}/api/cart/validate-guest`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ guestCart: guestCart })
+                });
+                // ===================================================================
+
+                if (!res.ok) {
+                    throw new Error('Failed to validate cart with server.');
+                }
+                
+                const { validatedItems } = await res.json();
+                
+                currentCart = validatedItems.map(item => ({
+                    ...item,
+                    product: item.productId // Standardize on `product`
+                }));
+
+                const guestCartToSave = validatedItems.map(item => ({
+                    productId: item.productId,
+                    name: item.name,
+                    price: item.price,
+                    image: item.image,
+                    size: item.size,
+                    colorName: item.colorName,
+                    quantity: item.quantity
+                }));
+                localStorage.setItem('vardhansCart', JSON.stringify(guestCartToSave));
+                
+                renderCart(currentCart);
+
+            } catch (error) {
+                console.error(error);
+                showMessage(error.message, 'error');
+                currentCart = guestCart.map(item => ({ 
+                    ...item, 
+                    product: item.productId, // Standardize
+                    realStock: 0, 
+                    isOutOfStock: true, 
+                    hasSufficientStock: false 
+                }));
+                renderCart(currentCart);
+            }
+        }
+
+        /**
+         * Renders the cart UI based on the validated `currentCart` data.
+         */
+        function renderCart(items) {
+            if (items.length === 0) {
+                showCartEmpty();
+                return;
+            }
+
+            availableContainer.innerHTML = ''; 
+            unavailableContainer.innerHTML = '';
+            
+            let availableHtml = '';
+            let unavailableHtml = '';
+            let hasUnavailableItems = false;
+            let subtotal = 0;
+            let canCheckout = true;
+
+            items.forEach(item => {
+                let stockHtml = '';
+                
+                const itemIdentifier = `'${item.product}', '${item.size}', '${item.colorName}'`;
+                
+                if (item.isOutOfStock) {
+                    stockHtml = `<p class="text-sm font-bold text-red-600 mt-1">Out of Stock</p>`;
+                    hasUnavailableItems = true;
+                    canCheckout = false;
+                } else if (!item.hasSufficientStock) {
+                    stockHtml = `<p class="text-sm font-bold text-red-600 mt-1">Only ${item.realStock} in stock. Please reduce quantity.</p>`;
+                    canCheckout = false;
+                } else if (item.isLowStock) {
+                    stockHtml = `<p class="text-sm font-medium text-red-600 mt-1">Only ${item.realStock} left!</p>`;
+                    subtotal += item.price * item.quantity; 
+                } else {
+                    stockHtml = `<p class="text-sm font-medium text-green-600 mt-1">In Stock (${item.realStock} available)</p>`;
+                    subtotal += item.price * item.quantity; 
+                }
+                
+                const plusDisabled = (item.quantity >= item.realStock || item.isOutOfStock) ? 'disabled' : '';
+                const minusDisabled = (item.quantity <= 1 || item.isOutOfStock) ? 'disabled' : '';
+                
+                const itemHtml = `
+                    <div class="flex items-start sm:items-center p-4 border-b border-pink-100 last:border-b-0 flex-wrap sm:flex-nowrap ${item.isOutOfStock ? 'unavailable-item opacity-60' : ''}">
+                        <a href="product.html?id=${item.product}" class="flex-shrink-0">
+                            <img src="${item.image}" alt="${item.name}" class="w-24 h-24 rounded-md object-cover hover:opacity-80 transition-opacity">
+                        </a>
+                        <div class="ml-0 sm:ml-4 mt-2 sm:mt-0 flex-1">
+                            <a href="product.html?id=${item.product}" class="text-lg font-medium text-gray-900 hover:text-pink-600">${item.name}</a>
+                            <p class="text-sm text-gray-500">Size: ${item.size}, Color: ${item.colorName}</p>
+                            <p class="text-lg font-bold text-pink-600 mt-1">₹${(item.price * item.quantity).toFixed(2)}</p>
+                            ${stockHtml}
+                        </div>
+                        <div class="flex flex-col items-start sm:items-end ml-0 sm:ml-4 mt-4 sm:mt-0 w-full sm:w-auto">
+                            <div class="flex items-center border rounded-md border-gray-200 ${item.isOutOfStock ? 'opacity-50' : ''}">
+                                <button class="w-8 h-8 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed" onclick="smartUpdateQuantity(${itemIdentifier}, -1)" ${minusDisabled}>-</button>
+                                <input type="number" value="${item.quantity}" min="1" max="${item.realStock}" 
+                                       class="quantity-input" 
+                                       onchange="smartSetQuantity(${itemIdentifier}, this.value, ${item.realStock || 0})"
+                                       ${item.isOutOfStock ? 'disabled' : ''}>
+                                <button class="w-8 h-8 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed" onclick="smartUpdateQuantity(${itemIdentifier}, 1)" ${plusDisabled}>+</button>
+                            </div>
+                            <button class="remove-btn mt-2 text-sm text-red-600 hover:text-red-800" onclick="smartRemoveFromCart(${itemIdentifier})">
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                if (item.isOutOfStock) {
+                    unavailableHtml += itemHtml;
+                } else {
+                    availableHtml += itemHtml;
+                }
+            });
+
+            availableContainer.innerHTML = availableHtml || '<p class="text-gray-500 p-4">No items available for checkout.</p>';
+            unavailableContainer.innerHTML = unavailableHtml;
+            unavailableSection.classList.toggle('hidden', !hasUnavailableItems);
+            
+            updateSummary(subtotal, canCheckout);
+            
+            loaderEl.style.display = 'none';
+            containerEl.style.display = 'grid';
+        }
+
+        /**
+         * Updates the floating order summary box.
+         */
+        function updateSummary(subtotal, canCheckout) {
+            const shipping = (subtotal > 0 && subtotal < 2000) ? 50.00 : 0.00;
+            const total = subtotal + shipping;
+
+            summarySubtotal.textContent = `₹${subtotal.toFixed(2)}`;
+            summaryShipping.textContent = shipping === 0 ? 'Free' : `₹${shipping.toFixed(2)}`;
+            summaryTotal.textContent = `₹${total.toFixed(2)}`;
+            shippingNote.style.display = subtotal > 0 ? 'block' : 'none';
+            
+            const hasAvailableItems = subtotal > 0;
+            
+            if (canCheckout && hasAvailableItems) {
+                checkoutBtn.disabled = false;
+                warningMessage.classList.add('hidden');
+            } else {
+                checkoutBtn.disabled = true;
+                if (!hasAvailableItems && currentCart.length > 0) {
+                    warningMessage.textContent = 'Your cart only contains unavailable items.';
+                    warningMessage.classList.remove('hidden');
+                } else if (!canCheckout) {
+                    warningMessage.textContent = 'Please reduce item quantities to proceed.';
+                    warningMessage.classList.remove('hidden');
+                } else {
+                    warningMessage.classList.add('hidden');
+                }
+            }
+        }
+
+        // --- "Smart" Action Functions ---
+
+        function smartUpdateQuantity(product, size, colorName, change) {
+            const item = currentCart.find(i => i.product === product && i.size === size && i.colorName === colorName);
+            if (!item) return;
+
+            const newQuantity = item.quantity + change;
+            if (newQuantity < 1) return; 
+            if (newQuantity > item.realStock) {
+                showMessage(`Only ${item.realStock} in stock.`, 'error');
+                return;
+            }
+            
+            loaderEl.style.display = 'flex';
+            containerEl.style.display = 'none';
+
+            if (token) {
+                handleLoggedInUpdate(product, size, colorName, newQuantity);
+            } else {
+                handleGuestUpdate(product, size, colorName, newQuantity);
+            }
+        }
+        
+        function smartSetQuantity(product, size, colorName, newQtyStr, maxStock) {
+            let newQuantity = parseInt(newQtyStr, 10);
+            
+            if (isNaN(newQuantity) || newQuantity < 1) {
+                newQuantity = 1;
+            }
+            if (newQuantity > maxStock) {
+                newQuantity = maxStock;
+                showMessage(`Only ${maxStock} in stock.`, 'error');
+            }
+            
+            loaderEl.style.display = 'flex';
+            containerEl.style.display = 'none';
+            
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                if (token) {
+                    handleLoggedInUpdate(product, size, colorName, newQuantity);
+                } else {
+                    handleGuestUpdate(product, size, colorName, newQuantity);
+                }
+            }, 750); 
+        }
+
+        function smartRemoveFromCart(product, size, colorName) {
+            loaderEl.style.display = 'flex';
+            containerEl.style.display = 'none';
+            
+            if (token) {
+                handleLoggedInRemove(product, size, colorName);
+            } else {
+                handleGuestRemove(product, size, colorName);
+            }
+        }
+
+        // --- API & localStorage Helper Functions ---
+
+        async function handleLoggedInUpdate(product, size, colorName, newQuantity) {
+            try {
+                // =================== DEPLOYMENT FIX: Use API_URL ===================
+                const res = await fetch(`${API_URL}/api/cart/update`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ product, size, colorName, newQuantity })
+                });
+                // ===================================================================
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.message || 'Failed to update item.');
+                }
+                loadLoggedInCart(); 
+            } catch (error) {
+                console.error(error);
+                showMessage(error.message, 'error');
+                loadLoggedInCart(); 
+            }
+        }
+
+        async function handleLoggedInRemove(product, size, colorName) {
+            try {
+                // =================== DEPLOYMENT FIX: Use API_URL ===================
+                const res = await fetch(`${API_URL}/api/cart/remove`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ product, size, colorName })
+                });
+                // ===================================================================
+                if (!res.ok) {
+                    throw new Error('Failed to remove item.');
+                }
+                loadLoggedInCart(); 
+            } catch (error) {
+                console.error(error);
+                showMessage(error.message, 'error');
+                loadLoggedInCart(); 
+            }
+        }
+
+        function handleGuestUpdate(product, size, colorName, newQuantity) {
+            let guestCart = JSON.parse(localStorage.getItem('vardhansCart')) || [];
+            const itemIndex = guestCart.findIndex(i => i.productId === product && i.size === size && i.colorName === colorName);
+            
+            if (itemIndex > -1) {
+                guestCart[itemIndex].quantity = newQuantity;
+                localStorage.setItem('vardhansCart', JSON.stringify(guestCart));
+            }
+            loadGuestCart();
+        }
+
+        function handleGuestRemove(product, size, colorName) {
+            let guestCart = JSON.parse(localStorage.getItem('vardhansCart')) || [];
+            guestCart = guestCart.filter(i => !(i.productId === product && i.size === size && i.colorName === colorName));
+            localStorage.setItem('vardhansCart', JSON.stringify(guestCart));
+            loadGuestCart();
+        }
+
+        // --- UI State Helpers ---
+
+        function showCartEmpty() {
+            loaderEl.style.display = 'none';
+            containerEl.style.display = 'none';
+            emptyEl.style.display = 'block';
+        }
+
+        function showCartError() {
+            loaderEl.style.display = 'none';
+            containerEl.style.display = 'none';
+            emptyEl.style.display = 'block';
+            emptyEl.querySelector('h2').textContent = 'Could not load your cart.';
+            emptyEl.querySelector('a').style.display = 'none';
+        }
+
+        // --- Message Box ---
+        function showMessage(message, type = 'error') {
+            const messageBox = document.getElementById('message-box');
+            const messageText = document.getElementById('message-text');
+            messageText.textContent = message;
+            messageBox.style.borderLeftColor = type === 'error' ? '#ef4444' : '#10b981';
+            messageBox.style.display = 'block';
+            setTimeout(() => {
+                messageBox.style.display = 'none';
+            }, 3000);
+        }
+
+        // --- Make functions globally accessible for onclick ---
+        window.toggleDesktopMenu = toggleDesktopMenu;
+        window.logout = logout;
+        window.smartUpdateQuantity = smartUpdateQuantity;
+        window.smartSetQuantity = smartSetQuantity;
+        window.smartRemoveFromCart = smartRemoveFromCart;
+
+    </script>
+    </body>
+</html>

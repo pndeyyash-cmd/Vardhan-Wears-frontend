@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Vardhan Wears</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        h1, h2, h3 { font-family: 'Playfair Display', serif; }
+        html { scroll-behavior: smooth; }
+    </style>
+    <link rel="manifest" href="/manifest.json">
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="text-2xl font-bold text-gray-800">Vardhan Wears</a>
+            
+            <div class="flex items-center space-x-4">
+                <a href="cart.html" class="p-2 text-gray-600 hover:text-gray-900">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="sr-only">Cart</span>
+                </a>
+                <a href="index.html" class="hidden md:block text-gray-600 hover:text-gray-900 font-medium">Home</a>
+                
+                <div class="relative hidden md:block">
+                    <button onclick="toggleDesktopMenu()" id="desktop-menu-btn" class="text-gray-800 focus:outline-none text-xl p-2 rounded-md hover:bg-gray-100">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div id="desktop-menu-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
+                        </div>
+                </div>
+
+                <div class="md:hidden">
+                    <button id="menu-btn" class="text-gray-800 focus:outline-none">
+                        <i class="fas fa-bars fa-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        
+        <div id="mobile-nav-links" class="md:hidden hidden bg-white">
+             </div>
+    </header>
+
+    <main>
+        <section id="register" class="py-20">
+            <div class="container mx-auto px-6 max-w-lg">
+                <div class="bg-gradient-to-b from-white to-pink-50 p-8 rounded-lg shadow-lg border border-pink-100">
+                    <h2 class="text-3xl font-bold text-center mb-6">Create Your Account</h2>
+                    
+                    <div id="message-container" class="mb-4 text-center"></div>
+
+                    <form id="register-form">
+                        <div class="mb-4">
+                            <label for="name" class="block text-gray-700 font-medium mb-2">Your Name</label>
+                            <input type="text" id="name" name="name" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="email" class="block text-gray-700 font-medium mb-2">Your Email</label>
+                            <input type="email" id="email" name="email" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" required>
+                        </div>
+                        <div class="mb-6">
+                            <label for="password" class="block text-gray-700 font-medium mb-2">Password</label>
+                            <input type="password" id="password" name="password" rows="5" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" required>
+                        </div>
+                        <button type="submit" id="register-btn" class="w-full bg-pink-600 text-white font-bold py-3 px-6 rounded-md hover:bg-pink-700 transition duration-300 disabled:opacity-50">Register</button>
+                    </form>
+                    <p class="text-center text-gray-600 mt-4">
+                        Already have an account? 
+                        <a href="login.html" class="text-pink-600 hover:underline">Login here</a>
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-6 text-center">
+            <p>© 2025 Vardhan Wears. All Rights Reserved.</p>
+            <p class="text-sm text-gray-400 mt-2">Website designed by Yash Vardhan Pandey.</p>
+        </div>
+    </footer>
+
+    <script>
+        // =================== DEPLOYMENT FIX: Add API_URL ===================
+        const API_URL = 'https://vardhan-wears-api.onrender.com';
+        // ===================================================================
+
+        // --- UI Element References ---
+        const registerForm = document.getElementById('register-form');
+        const registerBtn = document.getElementById('register-btn');
+        const messageContainer = document.getElementById('message-container');
+
+        // --- Menu Toggles ---
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileNavLinks = document.getElementById('mobile-nav-links'); 
+        menuBtn.addEventListener('click', () => {
+            mobileNavLinks.classList.toggle('hidden');
+        });
+        function toggleDesktopMenu() {
+            document.getElementById('desktop-menu-dropdown').classList.toggle('hidden');
+        }
+        window.onclick = function(event) {
+            if (!event.target.matches('#desktop-menu-btn') && !event.target.closest('#desktop-menu-btn')) {
+                const dropdown = document.getElementById('desktop-menu-dropdown');
+                if (dropdown && !dropdown.classList.contains('hidden')) {
+                    dropdown.classList.add('hidden');
+                }
+            }
+        }
+        // Make sure it's globally accessible for the HTML
+        window.toggleDesktopMenu = toggleDesktopMenu;
+
+        // --- Auth & Initial Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // ===============================================
+            // === PWA SERVICE WORKER REGISTRATION START ===
+            // ===============================================
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('Service Worker registered successfully:', registration);
+                    })
+                    .catch((error) => {
+                        console.error('Service Worker registration failed:', error);
+                    });
+            }
+            // ===============================================
+            // === PWA SERVICE WORKER REGISTRATION END ===
+            // ===============================================
+
+            checkAuth(); 
+        });
+
+        async function checkAuth() {
+            const token = localStorage.getItem('token');
+            const desktopDropdown = document.getElementById('desktop-menu-dropdown');
+            let desktopLinks = '';
+            let mobileLinks = '';
+            desktopLinks = `
+                <a href="index.html#collection" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Products</a>
+                <a href="index.html#about" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">About</a>
+                <a href="index.html#contact" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Contact</a>
+                <hr class="my-1 border-gray-100">
+            `;
+            mobileLinks = `
+                <a href="index.html#home" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Home</a>
+                <a href="index.html#collection" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Products</a>
+                <a href="index.html#about" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">About</a>
+                <a href="index.html#contact" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Contact</a>
+                <hr class="my-1 border-gray-100">
+            `;
+            if (!token) {
+                desktopLinks += `
+                    <a href="login.html" class="block px-4 py-2 text-sm text-pink-600 font-bold hover:bg-pink-50">Login</a>
+                `;
+                mobileLinks += `
+                    <a href="login.html" class="block py-2 px-6 text-sm text-pink-600 font-bold hover:bg-pink-50">Login</a>
+                `;
+            } else {
+                try {
+                    // =================== DEPLOYMENT FIX: Use API_URL ===================
+                    const res = await fetch(`${API_URL}/api/auth/me`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    // ===================================================================
+                    if (!res.ok) {
+                       localStorage.removeItem('token');
+                       checkAuth(); // Re-run as logged-out
+                       return;
+                    }
+                    const user = await res.json();
+                    
+                    desktopLinks += `
+                        <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-blue-600 font-medium hover:bg-gray-100">
+                            <i class="fas fa-user-circle w-5 mr-2"></i> My Profile
+                        </a>
+                        ${user.isAdmin ? '<a href="admin.html" class="block px-4 py-2 text-sm text-yellow-600 font-bold hover:bg-gray-100">Admin Panel</a>' : ''}
+                    `;
+                    mobileLinks += `
+                        <a href="profile.html" class="flex items-center block py-2 px-6 text-sm text-blue-600 font-medium hover:bg-gray-100">
+                            <i class="fas fa-user-circle w-5 mr-2"></i> My Profile
+                        </a>
+                        ${user.isAdmin ? '<a href="admin.html" class="block py-2 px-6 text-sm text-yellow-600 font-bold hover:bg-gray-100">Admin Panel</a>' : ''}
+                    `;
+                } catch (error) {
+                     localStorage.removeItem('token');
+                     checkAuth(); // Re-run as logged-out
+                }
+            }
+            desktopDropdown.innerHTML = desktopLinks;
+            mobileNavLinks.innerHTML = mobileLinks;
+        }
+
+        // --- Original Form Script ---
+
+        function showMessage(message, type = 'error') {
+            messageContainer.innerHTML = '';
+            const p = document.createElement('p');
+            p.textContent = message;
+            p.className = type === 'error' ? 'text-red-500 font-medium' : 'text-green-600 font-medium';
+            messageContainer.appendChild(p);
+        }
+
+        async function mergeGuestCart(token) {
+            const guestCartJSON = localStorage.getItem('vardhansCart');
+            if (!guestCartJSON) {
+                return; // No guest cart, nothing to do.
+            }
+            
+            const guestCart = JSON.parse(guestCartJSON);
+            if (!guestCart || guestCart.length === 0) {
+                localStorage.removeItem('vardhansCart'); // Clean up
+                return;
+            }
+
+            console.log('Guest cart found. Merging with database...');
+            try {
+                // =================== DEPLOYMENT FIX: Use API_URL ===================
+                const res = await fetch(`${API_URL}/api/cart/merge`, { 
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` // Use the new token
+                    },
+                    body: JSON.stringify({ guestCart: guestCart }) // Send the cart
+                });
+                // ===================================================================
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.message || 'Failed to merge cart.');
+                }
+                
+                console.log('Merge successful. Clearing local cart.');
+                localStorage.removeItem('vardhansCart');
+
+            } catch (error) {
+                console.error('CRITICAL: Cart merge failed.', error);
+                localStorage.removeItem('vardhansCart');
+                showMessage('Account created, but could not merge your guest cart. Please check your cart.', 'error');
+            }
+        }
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); 
+            messageContainer.innerHTML = '';
+            registerBtn.disabled = true;
+            registerBtn.textContent = 'Registering...';
+
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                // =================== DEPLOYMENT FIX: Use API_URL ===================
+                const response = await fetch(`${API_URL}/api/auth/register`, { 
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        email: email,
+                        password: password
+                    })
+                });
+                // ===================================================================
+
+                const data = await response.json();
+
+                if (response.ok) { // Status 201
+                    localStorage.setItem('token', data.token);
+
+                    const guestCart = JSON.parse(localStorage.getItem('vardhansCart') || 'null');
+                    if (guestCart && guestCart.length > 0) {
+                        showMessage('Registration successful! Merging your cart...', 'success');
+                        await mergeGuestCart(data.token); // Pass in new token
+                    } else {
+                        showMessage('Registration successful! Redirecting...', 'success');
+                    }
+                    
+                    setTimeout(() => {
+                        window.location.href = 'index.html'; // Redirect to home
+                    }, 1000); 
+                    
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                showMessage(error.message, 'error');
+                registerBtn.disabled = false;
+                registerBtn.textContent = 'Register';
+            }
+        });
+    </script>
+
+</body>
+</html>

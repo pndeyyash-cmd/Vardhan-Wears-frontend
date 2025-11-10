@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details - Vardhan's Wear</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        h1, h2, h3 { font-family: 'Playfair Display', serif; }
+        .thumbnail-active { border-color: #ec4899; /* pink-500 */ }
+         #message-box {
+            display: none;
+            position: fixed;
+            top: 5rem;
+            right: 1.5rem;
+            background-color: white;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            z-index: 50;
+            border-left-width: 4px;
+        }
+        
+        /* Styles for V3 Variant Selection */
+        .size-option.selected {
+            background-color: #fbcfe8; /* pink-100 */
+            border-color: #ec4899; /* pink-500 */
+            color: #9d174d; /* pink-900 */
+        }
+        .size-option.disabled {
+            background-color: #f9fafb; /* gray-50 */
+            color: #d1d5db; /* gray-300 */
+            cursor: not-allowed;
+            text-decoration: line-through;
+        }
+        .color-option.selected {
+            border-color: #ec4899; /* pink-500 */
+            --tw-ring-color: #ec4899; /* pink-500 */
+            box-shadow: 0 0 0 2px #ec4899;
+        }
+        .color-option.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+    </style>
+    <link rel="manifest" href="/manifest.json">
+</head>
+<body class="bg-gray-50">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="text-2xl font-bold text-gray-800">Vardhan Wears</a>
+            
+            <div class="flex items-center space-x-4">
+                <a href="cart.html" class="p-2 text-gray-600 hover:text-gray-900">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="sr-only">Cart</span>
+                </a>
+                <a href="index.html" class="hidden md:block text-gray-600 hover:text-gray-900 font-medium">Home</a>
+                
+                <div class="relative hidden md:block">
+                    <button onclick="toggleDesktopMenu()" id="desktop-menu-btn" class="text-gray-800 focus:outline-none text-xl p-2 rounded-md hover:bg-gray-100">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div id="desktop-menu-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
+                        </div>
+                </div>
+
+                <div class="md:hidden">
+                    <button id="menu-btn" class="text-gray-800 focus:outline-none">
+                        <i class="fas fa-bars fa-lg"></i>
+                    </button>
+                </div>
+            </div>
+            </nav>
+        <div id="mobile-nav-links" class="md:hidden hidden bg-white">
+             </div>
+    </header>
+    
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 mt-8 pb-16">
+        <div class="bg-gradient-to-b from-white to-pink-50 rounded-lg shadow-lg overflow-hidden border border-pink-100">
+            <div class="md:grid md:grid-cols-2">
+                <div class="p-4 sm:p-6">
+                    <div class="aspect-w-1 aspect-h-1">
+                        <img id="main-image" src="https://placehold.co/600x600/e2e8f0/64748b?text=Loading..." 
+                             alt="Product Image" 
+                             class="w-full h-full object-cover rounded-lg">
+                    </div>
+                    <div id="thumbnail-gallery" class="flex space-x-2 mt-4 overflow-x-auto">
+                        <div class="w-20 h-20 rounded-md bg-gray-200 animate-pulse"></div>
+                        <div class="w-20 h-20 rounded-md bg-gray-200 animate-pulse"></div>
+                    </div>
+                </div>
+
+                <div class="p-4 sm:p-6 lg:p-8">
+                    <p class="text-sm font-medium text-blue-600" id="product-category">Loading...</p>
+                    <h1 class="text-3xl font-bold text-gray-900 mt-1" id="product-name">Loading Product...</h1>
+                    <p class="text-3xl text-pink-600 mt-4" id="product-price">₹0.00</p>
+                    
+                    <div class="mt-6">
+                        <h3 class="text-sm font-medium text-gray-900">Description</h3>
+                        <p class="text-gray-600 mt-2" id="product-description">
+                            Loading product description...
+                        </p>
+                    </div>
+
+                    <div class="mt-6">
+                        <div class="mt-4">
+                            <div class="flex justify-between items-baseline">
+                                <h3 class="text-sm font-medium text-gray-900">Color</h3>
+                                <span id="selected-color-name" class="text-sm font-medium text-gray-700"></span>
+                            </div>
+                            <fieldset class="mt-2">
+                                <legend class="sr-only">Choose a color</legend>
+                                <div id="product-colors" class="flex flex-wrap gap-2">
+                                    <span class="px-3 py-1 border rounded-md text-gray-400">Loading...</span>
+                                </div>
+                            </fieldset>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-900 mt-4">Size</h3>
+                            <fieldset class="mt-2">
+                                <legend class="sr-only">Choose a size</legend>
+                                <div id="product-sizes" class="flex flex-wrap gap-2">
+                                    <span class="px-3 py-1 border rounded-md text-gray-400">Loading...</span>
+                                </div>
+                            </fieldset>
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <h3 class="text-sm font-medium text-gray-900">Quantity</h3>
+                        <div class="flex items-center mt-2">
+                            <button id="qty-minus" class="w-8 h-8 rounded-full border text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed" disabled>-</button>
+                            <input id="qty-input" type="text" value="1" class="w-12 text-center border-t border-b text-gray-900" readonly>
+                            <button id="qty-plus" class="w-8 h-8 rounded-full border text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed" disabled>+</button>
+                        </div>
+                        <p id="product-stock" class="mt-2 text-sm font-medium text-gray-500">Checking availability...</p>
+                    </div>
+
+                    <div class="mt-8">
+                        <button id="add-to-cart-btn" class="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="message-box">
+        <p id="message-text" class="font-medium">Item added to cart!</p>
+    </div>
+
+    <script>
+        // =================== DEPLOYMENT FIX: Add API_URL ===================
+        const API_URL = 'https://vardhan-wears-api.onrender.com';
+        // ===================================================================
+
+        // V3 State
+        let selectedSize = null;
+        let selectedColorName = null;
+        let selectedColorHex = null; // Still useful for UI
+        let quantity = 1;
+        let currentProduct = null; 
+        let currentVariant = null; 
+        // V3.1 State
+        let token = localStorage.getItem('token'); // Check for token on load
+
+        // --- Menu Toggles (Unchanged) ---
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileNavLinks = document.getElementById('mobile-nav-links'); 
+        menuBtn.addEventListener('click', () => {
+            mobileNavLinks.classList.toggle('hidden');
+        });
+
+        function toggleDesktopMenu() {
+            document.getElementById('desktop-menu-dropdown').classList.toggle('hidden');
+        }
+        // Make sure it's globally accessible
+        window.toggleDesktopMenu = toggleDesktopMenu;
+
+        window.onclick = function(event) {
+            if (!event.target.matches('#desktop-menu-btn') && !event.target.closest('#desktop-menu-btn')) {
+                const dropdown = document.getElementById('desktop-menu-dropdown');
+                if (dropdown && !dropdown.classList.contains('hidden')) {
+                    dropdown.classList.add('hidden');
+                }
+            }
+        }
+
+        // --- Auth Logic (Unchanged) ---
+        async function checkAuth() {
+            // Re-check token in case it changed
+            token = localStorage.getItem('token'); 
+            const desktopDropdown = document.getElementById('desktop-menu-dropdown');
+            let desktopLinks = '';
+            let mobileLinks = '';
+            
+            desktopLinks = `
+                <a href="index.html#collection" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Products</a>
+                <a href="index.html#about" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">About</a>
+                <a href="index.html#contact" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Contact</a>
+                <hr class="my-1 border-gray-100">
+            `;
+            
+            mobileLinks = `
+                <a href="index.html#home" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Home</a>
+                <a href="index.html#collection" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Products</a>
+                <a href="index.html#about" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">About</a>
+                <a href="index.html#contact" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Contact</a>
+                <hr class="my-1 border-gray-100">
+            `;
+
+            if (!token) {
+                desktopLinks += `
+                        <a href="login.html" class="block px-4 py-2 text-sm text-pink-600 font-bold hover:bg-pink-50">Login</a>
+                        <a href="register.html" class="block px-4 py-2 text-sm text-pink-600 font-bold hover:bg-pink-50">Register</a>
+                `;
+                mobileLinks += `
+                        <a href="login.html" class="block py-2 px-6 text-sm text-pink-600 font-bold hover:bg-pink-50">Login</a>
+                        <a href="register.html" class="block py-2 px-6 text-sm text-pink-600 font-bold hover:bg-pink-50">Register</a>
+                `;
+            } else {
+                try {
+                    // =================== DEPLOYMENT FIX: Use API_URL ===================
+                    const res = await fetch(`${API_URL}/api/auth/me`, { 
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    // ===================================================================
+                    if (!res.ok) {
+                        localStorage.removeItem('token');
+                        token = null; // Clear token state
+                        checkAuth(); // Re-run auth to render "Login"
+                        return;
+                    }
+                    const user = await res.json();
+                    
+                    desktopLinks += `
+                            <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-blue-600 font-medium hover:bg-gray-100">
+                                <i class="fas fa-user-circle w-5 mr-2"></i> My Profile
+                            </a>
+                            ${user.isAdmin ? '<a href="admin.html" class="block px-4 py-2 text-sm text-yellow-600 font-bold hover:bg-gray-100">Admin Panel</a>' : ''}
+                    `;
+                    mobileLinks += `
+                            <a href="profile.html" class="flex items-center block py-2 px-6 text-sm text-blue-600 font-medium hover:bg-gray-100">
+                                <i class="fas fa-user-circle w-5 mr-2"></i> My Profile
+                            </a>
+                            ${user.isAdmin ? '<a href="admin.html" class="block py-2 px-6 text-sm text-yellow-600 font-bold hover:bg-gray-100">Admin Panel</a>' : ''}
+                    `;
+                } catch (error) {
+                    console.error('Auth check failed:', error);
+                    localStorage.removeItem('token');
+                    token = null; // Clear token state
+                    checkAuth(); // Re-run auth
+                }
+            }
+            document.getElementById('desktop-menu-dropdown').innerHTML = desktopLinks;
+            mobileNavLinks.innerHTML = mobileLinks;
+        }
+
+        // --- Page Logic (V3.1 Refactor) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // ===============================================
+            // === PWA SERVICE WORKER REGISTRATION START ===
+            // ===============================================
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('Service Worker registered successfully:', registration);
+                    })
+                    .catch((error) => {
+                        console.error('Service Worker registration failed:', error);
+                    });
+            }
+            // ===============================================
+            // === PWA SERVICE WORKER REGISTRATION END ===
+            // ===============================================
+            
+            checkAuth();
+            fetchProductData();
+            setupEventListeners();
+        });
+
+        async function fetchProductData() {
+            const productId = new URLSearchParams(window.location.search).get('id');
+            if (!productId) {
+                document.querySelector('main').innerHTML = '<p class="text-center text-red-500">Error: No product ID specified.</p>';
+                return;
+            }
+
+            try {
+                // =================== DEPLOYMENT FIX: Use API_URL ===================
+                const response = await fetch(`${API_URL}/api/products/${productId}`);
+                // ===================================================================
+                if (!response.ok) {
+                    throw new Error('Product not found');
+                }
+                const product = await response.json();
+                currentProduct = product; 
+                renderProduct(product);
+            } catch (error) {
+                console.error('Failed to fetch product:', error);
+                document.querySelector('main').innerHTML = `<p class="text-center text-red-500">Error: ${error.message}.</p>`;
+            }
+        }
+
+        function renderProduct(product) {
+            document.getElementById('product-name').textContent = product.name;
+            document.getElementById('product-category').textContent = product.category ? product.category.name : 'Uncategorized';
+            document.getElementById('product-price').textContent = `₹${product.price.toFixed(2)}`;
+            document.getElementById('product-description').textContent = product.description;
+            
+            const mainImage = document.getElementById('main-image');
+            if (product.images && product.images.length > 0) {
+                mainImage.src = product.images[0];
+            } else {
+                mainImage.src = 'https://placehold.co/600x600/e2e8f0/64748b?text=No+Image';
+            }
+
+            const thumbnailGallery = document.getElementById('thumbnail-gallery');
+            thumbnailGallery.innerHTML = '';
+            if (product.images && product.images.length > 0) {
+                product.images.forEach((imgSrc, index) => {
+                    const img = document.createElement('img');
+                    img.src = imgSrc;
+                    img.alt = `Thumbnail ${index + 1}`;
+                    img.className = 'w-20 h-20 rounded-md cursor-pointer border-2 hover:border-pink-500'; 
+                    if (index === 0) {
+                        img.classList.add('thumbnail-active', 'border-pink-500'); 
+                    } else {
+                        img.classList.add('border-transparent');
+                    }
+                    img.onclick = () => changeImage(imgSrc, img);
+                    thumbnailGallery.appendChild(img);
+                });
+            }
+
+            const sizeContainer = document.getElementById('product-sizes');
+            const colorContainer = document.getElementById('product-colors');
+            sizeContainer.innerHTML = '';
+            colorContainer.innerHTML = '';
+
+            const uniqueSizes = [...new Set(product.variants.map(v => v.size))];
+            const uniqueColors = product.variants.reduce((acc, v) => {
+                if (!acc.find(c => c.name === v.colorName)) {
+                    acc.push({ name: v.colorName, hex: v.colorHex });
+                }
+                return acc;
+            }, []);
+
+            if (uniqueSizes.length > 0) {
+                uniqueSizes.forEach(size => {
+                    sizeContainer.innerHTML += `
+                        <label class="relative">
+                            <input type="radio" name="size" value="${size}" class="sr-only" onchange="handleOptionChange()">
+                            <span class="size-option cursor-pointer block px-4 py-2 border rounded-md text-sm font-medium border-gray-300 text-gray-700">
+                                ${size}
+                            </span>
+                        </label>
+                    `;
+                });
+            } else {
+                sizeContainer.innerHTML = '<span class="text-sm text-gray-500">One size only</span>';
+                selectedSize = 'One Size'; 
+            }
+
+            if (uniqueColors.length > 0) {
+                uniqueColors.forEach(color => {
+                    colorContainer.innerHTML += `
+                        <label class="relative">
+                            <input type="radio" name="color" value="${color.name}" data-hex="${color.hex}" class="sr-only" onchange="handleOptionChange()">
+                            <span class="color-option cursor-pointer block w-8 h-8 rounded-full border-2 border-gray-300" style="background-color: ${color.hex};">
+                                <span class="sr-only">${color.name}</span>
+                            </span>
+                        </label>
+                    `;
+                });
+            } else {
+                colorContainer.innerHTML = '<span class="text-sm text-gray-500">Standard color</span>';
+                selectedColorName = 'Standard'; 
+                selectedColorHex = '#FFFFFF';
+                // --- NEW: Update color name display for the "Standard" case ---
+                const colorNameDisplay = document.getElementById('selected-color-name');
+                if (colorNameDisplay) {
+                    colorNameDisplay.textContent = 'Standard';
+                }
+                // --- END NEW ---
+            }
+            
+            // Auto-select the first *available* variant
+            const firstAvailableVariant = product.variants.find(v => v.stock > 0);
+            if (firstAvailableVariant) {
+                selectedSize = firstAvailableVariant.size;
+                selectedColorName = firstAvailableVariant.colorName;
+                
+                if (document.querySelector(`input[name="size"][value="${selectedSize}"]`)) {
+                    document.querySelector(`input[name="size"][value="${selectedSize}"]`).checked = true;
+                }
+                if (document.querySelector(`input[name="color"][value="${selectedColorName}"]`)) {
+                    document.querySelector(`input[name="color"][value="${selectedColorName}"]`).checked = true;
+                }
+            } else {
+                // No items in stock, just select the first of each
+                if (uniqueSizes.length > 0 && document.querySelector('input[name="size"]')) {
+                    document.querySelector('input[name="size"]').checked = true;
+                }
+                if (uniqueColors.length > 0 && document.querySelector('input[name="color"]')) {
+                    document.querySelector('input[name="color"]').checked = true;
+                }
+            }
+            
+            handleOptionChange(); 
+        }
+
+        function handleOptionChange() {
+            const selectedSizeEl = document.querySelector('input[name="size"]:checked');
+            const selectedColorEl = document.querySelector('input[name="color"]:checked');
+
+            selectedSize = selectedSizeEl ? selectedSizeEl.value : (currentProduct && currentProduct.variants.length > 0 ? null : 'One Size');
+            selectedColorName = selectedColorEl ? selectedColorEl.value : (currentProduct && currentProduct.variants.length > 0 ? null : 'Standard');
+            selectedColorHex = selectedColorEl ? selectedColorEl.dataset.hex : '#FFFFFF';
+
+            // --- JAVASCRIPT CHANGE HERE ---
+            // Update the color name display text
+            const colorNameDisplay = document.getElementById('selected-color-name');
+            if (colorNameDisplay) {
+                // Capitalize the first letter
+                const capitalizedName = selectedColorName ? selectedColorName.charAt(0).toUpperCase() + selectedColorName.slice(1) : '';
+                colorNameDisplay.textContent = capitalizedName;
+            }
+            // --- END JAVASCRIPT CHANGE ---
+
+
+            // Update visual styles for selected options
+            document.querySelectorAll('.size-option').forEach(span => span.classList.remove('selected'));
+            if (selectedSizeEl) {
+                selectedSizeEl.nextElementSibling.classList.add('selected');
+            }
+            
+            document.querySelectorAll('.color-option').forEach(span => span.classList.remove('selected'));
+            if (selectedColorEl) {
+                selectedColorEl.nextElementSibling.classList.add('selected');
+            }
+
+            // Update dynamic availability
+            if(currentProduct) { // Ensure product is loaded
+                updateDynamicAvailability();
+                updateVariantState(); // Find the matching variant and update stock/buttons
+            }
+        }
+
+        function updateDynamicAvailability() {
+            // This function now correctly handles null selectedSize/Color
+            const allAvailableSizes = new Set(currentProduct.variants.filter(v => v.stock > 0).map(v => v.size));
+            const allAvailableColors = new Set(currentProduct.variants.filter(v => v.stock > 0).map(v => v.colorName));
+
+            // Get all available sizes for the *currently selected color*
+            const availableSizesForColor = selectedColorName ? new Set(
+                currentProduct.variants
+                    .filter(v => v.colorName === selectedColorName && v.stock > 0)
+                    .map(v => v.size)
+            ) : allAvailableSizes; // If no color selected, all available sizes are valid
+            
+            // Get all available colors for the *currently selected size*
+            const availableColorsForSize = selectedSize ? new Set(
+                currentProduct.variants
+                    .filter(v => v.size === selectedSize && v.stock > 0)
+                    .map(v => v.colorName)
+            ) : allAvailableColors; // If no size selected, all available colors are valid
+
+            // Disable/enable size buttons
+            document.querySelectorAll('input[name="size"]').forEach(input => {
+                const sizeSpan = input.nextElementSibling;
+                const isSelected = input.checked;
+                // Disable if it's not selected AND not available for the current color
+                // OR if it's out of stock for *all* colors
+                if ((!isSelected && !availableSizesForColor.has(input.value)) || !allAvailableSizes.has(input.value)) {
+                    sizeSpan.classList.add('disabled');
+                } else {
+                    sizeSpan.classList.remove('disabled');
+                }
+            });
+            
+            // Disable/enable color swatches
+            document.querySelectorAll('input[name="color"]').forEach(input => {
+                const colorSpan = input.nextElementSibling;
+                const isSelected = input.checked;
+                // Disable if it's not selected AND not available for the current size
+                // OR if it's out of stock for *all* sizes
+                if ((!isSelected && !availableColorsForSize.has(input.value)) || !allAvailableColors.has(input.value)) {
+                    colorSpan.classList.add('disabled');
+                } else {
+                    colorSpan.classList.remove('disabled');
+                }
+            });
+        }
+        
+        function updateVariantState() {
+            const stockDisplay = document.getElementById('product-stock');
+            const addToCartBtn = document.getElementById('add-to-cart-btn');
+            const qtyPlusBtn = document.getElementById('qty-plus');
+            const qtyMinusBtn = document.getElementById('qty-minus');
+            const qtyInput = document.getElementById('qty-input');
+
+            // Find the selected variant
+            currentVariant = currentProduct.variants.find(v => 
+                v.size === selectedSize && v.colorName === selectedColorName
+            );
+
+            // Reset quantity to 1
+            quantity = 1;
+            qtyInput.value = 1;
+
+            if (currentVariant && currentVariant.stock > 0) {
+                // Variant exists and is in stock
+                if (currentVariant.stock <= 3) {
+                    stockDisplay.textContent = `Only ${currentVariant.stock} left! Order soon.`;
+                    stockDisplay.className = 'mt-2 text-sm font-medium text-red-600';
+                } else {
+                    stockDisplay.textContent = `In Stock (${currentVariant.stock} available)`;
+                    stockDisplay.className = 'mt-2 text-sm font-medium text-green-600';
+                }
+                addToCartBtn.disabled = false;
+                addToCartBtn.textContent = 'Add to Cart';
+                qtyMinusBtn.disabled = true; // Always disabled at qty 1
+                qtyPlusBtn.disabled = (quantity >= currentVariant.stock); 
+
+            } else if (selectedSize && selectedColorName) {
+                // A specific, invalid/OOS variant is selected
+                stockDisplay.textContent = 'Out of Stock';
+                stockDisplay.className = 'mt-2 text-sm font-bold text-red-600';
+                addToCartBtn.disabled = true;
+                addToCartBtn.textContent = 'Out of Stock';
+                qtyPlusBtn.disabled = true;
+                qtyMinusBtn.disabled = true;
+            } else {
+                // Not all options are selected yet
+                stockDisplay.textContent = 'Please select a size and color';
+                stockDisplay.className = 'mt-2 text-sm font-medium text-gray-500';
+                addToCartBtn.disabled = true;
+                addToCartBtn.textContent = 'Select Options';
+                qtyPlusBtn.disabled = true;
+                qtyMinusBtn.disabled = true;
+            }
+        }
+
+        function setupEventListeners() {
+            const qtyInput = document.getElementById('qty-input');
+            const qtyMinusBtn = document.getElementById('qty-minus');
+            const qtyPlusBtn = document.getElementById('qty-plus');
+            
+            qtyMinusBtn.addEventListener('click', () => {
+                if (quantity > 1) {
+                    quantity--;
+                    qtyInput.value = quantity;
+                }
+                qtyMinusBtn.disabled = (quantity <= 1);
+                if (currentVariant) {
+                    qtyPlusBtn.disabled = (quantity >= currentVariant.stock);
+                }
+            });
+            
+            qtyPlusBtn.addEventListener('click', () => {
+                if (currentVariant && quantity < currentVariant.stock) {
+                    quantity++;
+                    qtyInput.value = quantity;
+                } else if (currentVariant && currentVariant.stock > 0) {
+                    showMessage(`Cannot add more. Only ${currentVariant.stock} in stock.`, 'error');
+                }
+                qtyMinusBtn.disabled = (quantity <= 1);
+                if (currentVariant) {
+                    qtyPlusBtn.disabled = (quantity >= currentVariant.stock);
+                }
+            });
+            document.getElementById('add-to-cart-btn').addEventListener('click', smartAddToCart);
+        }
+        
+        window.changeImage = function(newSrc, clickedThumbnail) {
+            document.getElementById('main-image').src = newSrc;
+            document.querySelectorAll('.thumbnail-active').forEach(img => {
+                img.classList.remove('thumbnail-active', 'border-pink-500'); 
+                img.classList.add('border-transparent');
+            });
+            clickedThumbnail.classList.add('thumbnail-active', 'border-pink-500'); 
+            clickedThumbnail.classList.remove('border-transparent');
+        }
+
+        // --- V3.1 "Smart" Cart Logic (Unchanged from previous refactor) ---
+
+        function smartAddToCart() {
+            if (!currentProduct) return; 
+
+            // 1. Validation
+            if (!selectedSize || !selectedColorName) {
+                showMessage('Please select a size and color.', 'error');
+                return;
+            }
+
+            if (!currentVariant || currentVariant.stock <= 0) {
+                showMessage('This item is out of stock.', 'error');
+                return;
+            }
+
+            if (quantity > currentVariant.stock) {
+                showMessage(`Only ${currentVariant.stock} in stock.`, 'error');
+                return;
+            }
+
+            // 2. Create the V3.1 cart item object
+            const cartItem = {
+                productId: currentProduct._id, 
+                name: currentProduct.name,
+                price: currentProduct.price,
+                image: currentProduct.images[0],
+                size: selectedSize,
+                colorName: selectedColorName, 
+                quantity: quantity
+            };
+
+            // 3. Check auth state and dispatch
+            if (token) {
+                handleLoggedInAddToCart(cartItem);
+            } else {
+                handleGuestAddToCart(cartItem);
+            }
+        }
+
+        async function handleLoggedInAddToCart(cartItem) {
+            const btn = document.getElementById('add-to-cart-btn');
+            btn.disabled = true;
+            btn.textContent = 'Adding...';
+
+            try {
+                // =================== DEPLOYMENT FIX: Use API_URL ===================
+                const res = await fetch(`${API_URL}/api/cart/add`, { 
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(cartItem) 
+                });
+                // ===================================================================
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.message || 'Error adding to cart');
+                }
+
+                showMessage('Item added to cart!', 'success');
+                updateVariantState(); 
+
+            } catch (error) {
+                console.error('Logged-in Add to Cart error:', error);
+                showMessage(error.message, 'error');
+                updateVariantState(); 
+            }
+        }
+
+        function handleGuestAddToCart(cartItem) {
+            const btn = document.getElementById('add-to-cart-btn');
+            btn.disabled = true; 
+
+            try {
+                let cart = JSON.parse(localStorage.getItem('vardhansCart')) || [];
+                
+                const existingItemIndex = cart.findIndex(item => 
+                    item.productId === cartItem.productId &&
+                    item.size === cartItem.size &&
+                    item.colorName === cartItem.colorName
+                );
+                
+                if (existingItemIndex > -1) {
+                    cart[existingItemIndex].quantity += cartItem.quantity;
+                } else {
+                    cart.push(cartItem);
+                }
+
+                localStorage.setItem('vardhansCart', JSON.stringify(cart));
+                showMessage('Item added to cart!', 'success');
+                updateVariantState();
+
+            } catch (error) {
+                console.error('Guest Add to Cart error:', error);
+                showMessage('Could not add to cart.', 'error');
+                updateVariantState();
+            }
+        }
+
+        // --- End of V3.1 Refactor ---
+
+
+        function showMessage(message, type = 'success') {
+            const messageBox = document.getElementById('message-box');
+            const messageText = document.getElementById('message-text');
+            messageText.textContent = message;
+            messageBox.style.borderLeftColor = type === 'error' ? '#ef4444' : '#10b981';
+            messageBox.style.display = 'block';
+            setTimeout(() => {
+                messageBox.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

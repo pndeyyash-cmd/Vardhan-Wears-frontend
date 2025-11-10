@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Vardhan Wears</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <style>
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: #fdf2f8; /* pink-50 */
+            color: #1f2937; /* gray-800 */
+        }
+        h1, h2, h3 { font-family: 'Playfair Display', serif; }
+
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #fbcfe8; /* pink-200 */ padding: 12px; text-align: left; vertical-align: middle; }
+        th { background-color: #fce7f3; /* pink-100 */ }
+        tr:nth-child(even) { background-color: #fff; }
+
+        /* Standard Buttons */
+        .btn { padding: 6px 12px; border-radius: 4px; color: white; cursor: pointer; text-decoration: none; font-size: 0.875rem; font-weight: 500; transition: background-color 0.2s; }
+        .btn-edit { background-color: #f0ad4e; } /* yellow */
+        .btn-edit:hover { background-color: #ec971f; }
+        .btn-delete { background-color: #d9534f; } /* red */
+        .btn-delete:hover { background-color: #c9302c; }
+        .btn-delete-category { background-color: #d9534f; color: white; font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; }
+        .btn-delete-category:hover { background-color: #c9302c; }
+
+        /* Primary Action Buttons (Pink) */
+        .btn-primary {
+            background-color: #db2777; /* pink-600 */
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #be185d; /* pink-700 */
+        }
+        .btn-primary-sm {
+            background-color: #db2777; /* pink-600 */
+            color: white;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            border-radius: 0.375rem;
+            transition: background-color 0.2s;
+        }
+        .btn-primary-sm:hover {
+            background-color: #be185d; /* pink-700 */
+        }
+
+        /* Message Box */
+        #message-box {
+            display: none;
+            position: fixed;
+            top: 5rem;
+            right: 1.5rem;
+            background-color: white;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            z-index: 100;
+            border-left-width: 4px;
+        }
+
+        /* Tabbed Interface */
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            color: #4b5563; /* gray-600 */
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .tab-button:hover {
+            color: #000;
+        }
+        .tab-button.active {
+            color: #db2777; /* pink-600 */
+            border-bottom-color: #db2777; /* pink-600 */
+        }
+        .tab-content {
+            display: none; /* Hidden by default */
+        }
+        .tab-content.active {
+            display: block; /* Shown when active */
+        }
+
+        /* Loading Spinner */
+        #admin-loader {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-top: 10rem;
+        }
+        .spinner {
+            border: 4px solid #fce7f3; /* pink-100 */
+            border-top: 4px solid #db2777; /* pink-600 */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Modal Styles */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            padding: 1rem;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            max-width: 500px; 
+            width: 100%;
+        }
+        
+        /* Variant Table Styles */
+        .variant-table { width: 100%; }
+        .variant-table th { background-color: #fce7f3; /* pink-100 */ font-size: 0.75rem; padding: 8px; }
+        .variant-table td { font-size: 0.875rem; padding: 8px; }
+        .variant-color-swatch {
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 50%;
+            border: 1px solid #d1d5db;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        /* Color Palette Swatch Styles */
+        .color-swatch {
+            width: 2.25rem; /* 36px */
+            height: 2.25rem; /* 36px */
+            border-radius: 50%;
+            border: 2px solid #d1d5db; /* gray-300 */
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .color-swatch:hover {
+            transform: scale(1.1);
+        }
+        .color-swatch.selected {
+            border-color: #db2777; /* pink-600 */
+            box-shadow: 0 0 0 3px #fbcfe8; /* pink-200 ring */
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header class="bg-[#831843] text-white shadow-md">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="text-xl sm:text-2xl font-bold">Vardhan Wears (Admin Panel)</a> <div class="flex items-center space-x-4">
+                <a href="index.html" class="hidden sm:block text-pink-100 hover:text-white font-medium">Home</a> <div class="relative">
+                    <button id="menu-btn" class="text-pink-100 hover:text-white focus:outline-none">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                    <div id="mobile-menu" class="hidden absolute top-full right-0 mt-2 w-56 bg-white shadow-lg z-20 rounded-md ring-1 ring-black ring-opacity-5">
+                        <a href="index.html#collection" class="flex items-center gap-3 px-4 py-3 text-gray-700 font-medium hover:bg-pink-50 rounded-t-md">
+                            <i class="fas fa-shopping-bag w-5 text-center text-gray-400"></i>
+                            <span>Products</span>
+                        </a>
+                        <a href="index.html#about" class="flex items-center gap-3 px-4 py-3 text-gray-700 font-medium hover:bg-pink-50">
+                            <i class="fas fa-info-circle w-5 text-center text-gray-400"></i>
+                            <span>About</span>
+                        </a>
+                        <a href="index.html#contact" class="flex items-center gap-3 px-4 py-3 text-gray-700 font-medium hover:bg-pink-50">
+                            <i class="fas fa-envelope w-5 text-center text-gray-400"></i>
+                            <span>Contact</span>
+                        </a>
+                        <a href="profile.html" class="flex items-center gap-3 px-4 py-3 text-pink-600 font-bold hover:bg-pink-50 rounded-b-md">
+                            <i class="fas fa-user-circle w-5 text-center"></i>
+                            <span>My Profile</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <main class="container mx-auto p-6">
+        
+        <h1 class="text-3xl font-bold mb-6" id="welcome-message">Loading Admin Dashboard...</h1>
+
+        <div id="admin-loader">
+            <div class="spinner"></div>
+            <p class="text-xl font-medium mt-4 text-gray-600">Loading data...</p>
+        </div>
+
+        <div id="admin-content" class="hidden">
+            <div class="bg-white shadow-md rounded-lg mb-8">
+                <div class="border-b border-pink-200">
+                    <nav class="flex flex-wrap sm:flex-nowrap sm:overflow-x-auto -mb-px p-4" aria-label="Tabs"> 
+                        <button class="tab-button active" onclick="showTab('orders')">
+                            <i class="fas fa-receipt sm:mr-2"></i><span class="hidden sm:inline">Manage Orders</span> 
+                        </button>
+                        <button class="tab-button" onclick="showTab('products')">
+                            <i class="fas fa-box-open sm:mr-2"></i><span class="hidden sm:inline">Manage Products</span> 
+                        </button>
+                        <button class="tab-button" onclick="showTab('create')">
+                            <i class="fas fa-plus-circle sm:mr-2"></i><span class="hidden sm:inline">Create & Manage</span> 
+                        </button>
+                    </nav>
+                </div>
+            
+                <div>
+                    <div id="orders-tab-content" class="tab-content active">
+                        <section id="manage-orders" class="p-6">
+                            <h2 class="text-2xl font-bold mb-4">Manage All Orders</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div class="relative">
+                                    <label for="search-input" class="block text-sm font-medium text-gray-700">Search by Order ID or Customer</label>
+                                    <input type="text" id="search-input" placeholder="Type to search..." class="w-full mt-1 p-2 border border-gray-300 rounded-md shadow-sm focus:border-pink-500 focus:ring-pink-500">
+                                    <span id="search-button" class="absolute right-3 top-8 text-gray-400 hover:text-pink-600 cursor-pointer transition-colors">
+                                        <i class="fas fa-search"></i>
+                                    </span>
+                                </div>
+                                <div class="text-right">
+                                    <label for="order-filter" class="block text-sm text-left md:text-right font-medium text-gray-700">Filter by Date</label>
+                                    <select id="order-filter" class="w-full md:w-auto mt-1 p-2 border border-gray-300 rounded-md shadow-sm focus:border-pink-500 focus:ring-pink-500">
+                                        <option value="all">All Time</option>
+                                        <option value="30days">Last 30 Days</option>
+                                        <option value="3months">Last 3 Months</option>
+                                        <option value="6months">Last 6 Months</option>
+                                        <option value="2025">2025</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="order-list-container" class="overflow-x-auto">
+                                <p class="text-gray-500">Loading all orders...</p>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div id="products-tab-content" class="tab-content">
+                        <section id="manage-products" class="p-6">
+                            <h2 class="text-2xl font-bold mb-4">Manage Existing Products</h2>
+                            <div id="product-list-container" class="overflow-x-auto">
+                            </div>
+                        </section>
+                    </div>
+
+                    <div id="create-tab-content" class="tab-content">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 p-6">
+                            <div class="lg:col-span-2">
+                                <section id="create-product" class="mb-8">
+                                    <h2 class="text-2xl font-bold mb-4">Create New Product</h2>
+                                    <form id="create-form">
+                                        <div class="mb-4">
+                                            <label for="create-name" class="block text-gray-700 font-medium mb-2">Product Name</label>
+                                            <input type="text" id="create-name" class="w-full px-4 py-2 border rounded-md border-gray-300 focus:border-pink-500 focus:ring-pink-500" required>
+                                        </div>
+                                        <div class="mb-4">
+                                            <label for="create-desc" class="block text-gray-700 font-medium mb-2">Description</label>
+                                            <textarea id="create-desc" rows="3" class="w-full px-4 py-2 border rounded-md border-gray-300 focus:border-pink-500 focus:ring-pink-500" required></textarea>
+                                        </div>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                            <div>
+                                                <label for="create-price" class="block text-gray-700 font-medium mb-2">Base Price (₹)</label>
+                                                <input type="number" id="create-price" class="w-full px-4 py-2 border rounded-md border-gray-300 focus:border-pink-500 focus:ring-pink-500" min="0" required>
+                                            </div>
+                                            <div>
+                                                <label for="create-category" class="block text-gray-700 font-medium mb-2">Category</label>
+                                                <select id="create-category" class="w-full px-4 py-2 border rounded-md bg-white border-gray-300 focus:border-pink-500 focus:ring-pink-500" required>
+                                                    <option value="">Loading...</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="mb-4 p-4 border rounded-md bg-pink-50 border-pink-100">
+                                            <div class="flex justify-between items-center mb-2">
+                                                <label class="block text-gray-700 font-medium">Product Variants</label>
+                                                <button type="button" onclick="openVariantModal('create')" class="btn-primary-sm">
+                                                    <i class="fas fa-plus mr-1"></i> Add Variant
+                                                </button>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mb-4">Add each unique Size/Color combination and its stock. E.g., (M, Blue, 10), (L, Blue, 12), (M, Red, 8).</p>
+                                            <div id="create-variants-table-container" class="overflow-x-auto">
+                                                <p id="create-variants-placeholder" class="text-sm text-gray-500 text-center py-4">No variants added yet.</p>
+                                            </div>
+                                        </div>
+                                        <div class="mb-4 p-4 border rounded-md bg-pink-50 border-pink-100">
+                                            <label class="block text-gray-700 font-medium mb-2">Product Images</label>
+                                            <div class="space-y-4">
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-600">Image 1 (Required)</label>
+                                                    <input type="file" id="create-image-1" class="hidden" required onchange="updateFilename('create-image-1', 'create-image-1-filename')">
+                                                    <div class="flex items-center">
+                                                        <button type="button" onclick="document.getElementById('create-image-1').click()" class="mt-1 text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-md">
+                                                            <i class="fas fa-upload mr-2"></i> Choose File
+                                                        </button>
+                                                        <span id="create-image-1-filename" class="text-xs text-gray-500 ml-3">No file chosen</span>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-600">Image 2 (Optional)</label>
+                                                    <input type="file" id="create-image-2" class="hidden" onchange="updateFilename('create-image-2', 'create-image-2-filename')">
+                                                    <div class="flex items-center">
+                                                        <button type="button" onclick="document.getElementById('create-image-2').click()" class="mt-1 text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-md">
+                                                            <i class="fas fa-upload mr-2"></i> Choose File
+                                                        </button>
+                                                        <span id="create-image-2-filename" class="text-xs text-gray-500 ml-3">No file chosen</span>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-600">Image 3 (Optional)</label>
+                                                    <input type="file" id="create-image-3" class="hidden" onchange="updateFilename('create-image-3', 'create-image-3-filename')">
+                                                    <div class="flex items-center">
+                                                        <button type="button" onclick="document.getElementById('create-image-3').click()" class="mt-1 text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-md">
+                                                            <i class="fas fa-upload mr-2"></i> Choose File
+                                                        </button>
+                                                        <span id="create-image-3-filename" class="text-xs text-gray-500 ml-3">No file chosen</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="submit" id="create-btn" class="w-full btn-primary">Create Product</button>
+                                    </form>
+                                </section>
+                            </div>
+                            <div class="lg:col-span-1">
+                                <section id="manage-categories" class="mb-8">
+                                    <h2 class="text-2xl font-bold mb-4">Manage Categories</h2>
+                                    <div id="category-message" class="mb-2 text-center"></div>
+                                    <form id="category-form" class="mb-4 space-y-4">
+                                        <div>
+                                            <label for="category-name" class="block text-gray-700 font-medium mb-2">New Category Name</label>
+                                            <input type="text" id="category-name" class="w-full px-4 py-2 border rounded-md border-gray-300 focus:border-pink-500 focus:ring-pink-500" required>
+                                        </div>
+                                        <div>
+                                            <label for="category-parent" class="block text-gray-700 font-medium mb-2">Parent Category</label>
+                                            <select id="category-parent" class="w-full px-4 py-2 border rounded-md bg-white border-gray-300 focus:border-pink-500 focus:ring-pink-500" required>
+                                                <option value="None">None</option>
+                                                <option value="Men">Men</option>
+                                                <option value="Women">Women</option>
+                                                <option value="Kids">Kids</option>
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="w-full btn-primary py-2">Add New Category</button>
+                                    </form>
+                                    <h3 class="text-lg font-semibold mb-2">Existing Categories:</h3>
+                                    <div id="category-list" class="space-y-2">
+                                        <p class="text-gray-500">Loading...</p>
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="edit-modal" class="hidden modal-backdrop">
+             <div class="bg-white p-4 sm:p-8 rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+                <h2 class="text-2xl font-bold mb-4">Edit Product</h2>
+                <form id="edit-form">
+                    <input type="hidden" id="edit-id">
+                    <input type="hidden" id="edit-hidden-images">
+                    <div class="mb-4">
+                        <label for="edit-name" class="block text-gray-700 font-medium mb-2">Product Name</label>
+                        <input type="text" id="edit-name" class="w-full px-4 py-2 border rounded-md border-gray-300 focus:border-pink-500 focus:ring-pink-500" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="edit-desc" class="block text-gray-700 font-medium mb-2">Description</label>
+                        <textarea id="edit-desc" rows="3" class="w-full px-4 py-2 border rounded-md border-gray-300 focus:border-pink-500 focus:ring-pink-500" required></textarea>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="edit-price" class="block text-gray-700 font-medium mb-2">Base Price (₹)</label>
+                            <input type="number" id="edit-price" class="w-full px-4 py-2 border rounded-md border-gray-300 focus:border-pink-500 focus:ring-pink-500" min="0" required>
+                        </div>
+                        <div>
+                            <label for="edit-category" class="block text-gray-700 font-medium mb-2">Category</label>
+                            <select id="edit-category" class="w-full px-4 py-2 border rounded-md bg-white border-gray-300 focus:border-pink-500 focus:ring-pink-500" required>
+                                <option value="">Loading...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-4 p-4 border rounded-md bg-pink-50 border-pink-100">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="block text-gray-700 font-medium">Product Variants</label>
+                            <button type="button" onclick="openVariantModal('edit')" class="btn-primary-sm">
+                                <i class="fas fa-plus mr-1"></i> Add Variant
+                            </button>
+                        </div>
+                        <div id="edit-variants-table-container" class="overflow-x-auto">
+                            <p id="edit-variants-placeholder" class="text-sm text-gray-500 text-center py-4">No variants added yet.</p>
+                        </div>
+                    </div>
+                    <div class="mb-4 p-4 border rounded-md bg-pink-50 border-pink-100">
+                        <label class="block text-gray-700 font-medium mb-2">Current Images</label>
+                        <div id="edit-current-images-container" class="flex gap-2 mb-2 flex-wrap">
+                            <p class="text-sm text-gray-500">Loading images...</p>
+                        </div>
+                        <label class="block text-gray-700 font-medium mb-2">Upload New Images (Optional)</label>
+                        <p class="text-xs text-gray-500 mt-1 mb-2">If you upload new images, they will <span class="font-bold text-red-600">replace</span> all old ones.</p>
+                        <div class="space-y-4">
+                             <div>
+                                <label class="block text-sm font-medium text-gray-600">New Image 1</label>
+                                <input type="file" id="edit-image-1" class="hidden" onchange="updateFilename('edit-image-1', 'edit-image-1-filename')">
+                                <div class="flex items-center">
+                                    <button type="button" onclick="document.getElementById('edit-image-1').click()" class="mt-1 text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-md">
+                                        <i class="fas fa-upload mr-2"></i> Choose File
+                                    </button>
+                                    <span id="edit-image-1-filename" class="text-xs text-gray-500 ml-3">No file chosen</span>
+                                </div>
+                            </div>
+                             <div>
+                                <label class="block text-sm font-medium text-gray-600">New Image 2</label>
+                                <input type="file" id="edit-image-2" class="hidden" onchange="updateFilename('edit-image-2', 'edit-image-2-filename')">
+                                <div class="flex items-center">
+                                    <button type="button" onclick="document.getElementById('edit-image-2').click()" class="mt-1 text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-md">
+                                        <i class="fas fa-upload mr-2"></i> Choose File
+                                    </button>
+                                    <span id="edit-image-2-filename" class="text-xs text-gray-500 ml-3">No file chosen</span>
+                                </div>
+                            </div>
+                             <div>
+                                <label class="block text-sm font-medium text-gray-600">New Image 3</label>
+                                <input type="file" id="edit-image-3" class="hidden" onchange="updateFilename('edit-image-3', 'edit-image-3-filename')">
+                                <div class="flex items-center">
+                                    <button type="button" onclick="document.getElementById('edit-image-3').click()" class="mt-1 text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-md">
+                                        <i class="fas fa-upload mr-2"></i> Choose File
+                                    </button>
+                                    <span id="edit-image-3-filename" class="text-xs text-gray-500 ml-3">No file chosen</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col-reverse sm:flex-row justify-end gap-4">
+                        <button type="button" id="cancel-edit" class="bg-gray-500 text-white font-bold py-2 px-6 rounded-md hover:bg-gray-600">Cancel</button>
+                        <button type="submit" id="edit-save-btn" class="btn-primary py-2 px-6">Save Changes</button>
+                    </div>
+                </form>
+             </div>
+        </div>
+
+        <div id="variant-modal" class="modal-backdrop hidden">
+            <div class="modal-content">
+                <h3 class="text-lg font-bold mb-4" id="variant-modal-title">Add New Variant</h3>
+                <form id="variant-form" class="space-y-4">
+                    <div>
+                        <label for="variant-size" class="block text-sm font-medium text-gray-700">Size</label>
+                        <select id="variant-size" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:border-pink-500 focus:ring-pink-500">
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Color</label>
+                        <input type="hidden" id="variant-color-name">
+                        <div id="variant-color-palette" class="flex flex-wrap gap-2 mt-2">
+                            <p class="text-xs text-gray-500">Loading colors...</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="variant-stock" class="block text-sm font-medium text-gray-700">Stock Quantity</label>
+                        <input type="number" id="variant-stock" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:border-pink-500 focus:ring-pink-500" min="0" value="0">
+                    </div>
+                    <div class="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-4">
+                        <button type="button" onclick="closeVariantModal()" class="bg-gray-500 text-white font-bold py-2 px-4 rounded-md hover:bg-gray-600">Cancel</button>
+                        <button type="submit" class="btn-primary py-2 px-4">Save Variant</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    
+    <div id="message-box" class="border-gray-300">
+        <p id="message-text" class="font-medium">Success!</p>
+    </div>
+
+<script>
+    // =================== DEPLOYMENT FIX: Add API_URL ===================
+    const API_URL = 'https://vardhan-wears-api.onrender.com';
+    // ===================================================================
+
+    // === CLOUDINARY SETTINGS ===
+    const CLOUDINARY_CLOUD_NAME = "dbhtu0kzg";
+    const CLOUDINARY_UPLOAD_PRESET = "vardhan_uploads";
+    
+    const STANDARD_SIZES = ['One Size', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'];
+    const PREDEFINED_COLORS = [
+        { name: 'Standard', hex: '#FFFFFF' }, { name: 'Black', hex: '#000000' },
+        { name: 'White', hex: '#FFFFFF' }, { name: 'Gray', hex: '#808080' },
+        { name: 'Silver', hex: '#C0C0C0' }, { name: 'Maroon', hex: '#800000' },
+        { name: 'Red', hex: '#FF0000' }, { name: 'Olive', hex: '#808000' },
+        { name: 'Yellow', hex: '#FFFF00' }, { name: 'Green', hex: '#008000' },
+        { name: 'Lime', hex: '#00FF00' }, { name: 'Teal', hex: '#008080' },
+        { name: 'Aqua', hex: '#00FFFF' }, { name: 'Navy', hex: '#000080' },
+        { name: 'Blue', hex: '#0000FF' }, { name: 'Purple', hex: '#800080' },
+        { name: 'Fuchsia', hex: '#FF00FF' }, { name: 'Brown', hex: '#A52A2A' },
+        { name: 'Dark Creme', hex: '#F3E5AB' }, { name: 'Khaki', hex: '#F0E68C' },
+        { name: 'Orange', hex: '#FFA500' }, { name: 'Pink', hex: '#FFC0CB' },
+        { name: 'Indigo', hex: '#4B0082' }, { name: 'Violet', hex: '#EE82EE' },
+        { name: 'Gold', hex: '#FFD700' }, { name: 'Salmon', hex: '#FA8072' },
+        { name: 'Turquoise', hex: '#40E0D0' }, { name: 'Sky Blue', hex: '#87CEEB' },
+        { name: 'Crimson', hex: '#DC143C' }, { name: 'Lavender', hex: '#E6E6FA' },
+        { name: 'Burgundy', hex: '#800020' }
+    ];
+
+    // === GLOBAL VARIABLES ===
+    let welcomeMessage, adminContent, adminLoader, productListContainer, orderListContainer,
+        createForm, createBtn, editModal, editForm, editSaveBtn, cancelEditBtn,
+        categoryForm, categoryList, categoryMessage, createCategorySelect, editCategorySelect,
+        variantModal, variantForm, variantModalTitle, variantSizeSelect,
+        variantColorPalette, variantColorNameInput, menuBtn, mobileMenu,
+        createVariantsContainer, createVariantsPlaceholder,
+        editVariantsContainer, editVariantsPlaceholder,
+        orderFilterSelect, searchInput, searchButton;
+
+    const token = localStorage.getItem('token');
+    let allOrders = []; 
+    let currentCreateVariants = [];
+    let currentEditVariants = [];
+    let currentVariantEditIndex = null; 
+    let currentVariantMode = 'create'; 
+
+    // === Tab Switching Function ===
+    function showTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
+        document.getElementById(`${tabName}-tab-content`).classList.add('active');
+        document.querySelector(`.tab-button[onclick="showTab('${tabName}')"]`).classList.add('active');
+    }
+
+    // === Update Filename Display ===
+    function updateFilename(inputId, filenameId) {
+        const input = document.getElementById(inputId);
+        const filenameSpan = document.getElementById(filenameId);
+        filenameSpan.textContent = input.files.length > 0 ? input.files[0].name : 'No file chosen';
+    }
+
+    // --- 1. SCRIPT INITIALIZATION ---
+    document.addEventListener('DOMContentLoaded', async () => {
+        // **Assign all element variables now that the DOM is ready**
+        welcomeMessage = document.getElementById('welcome-message');
+        adminContent = document.getElementById('admin-content');
+        adminLoader = document.getElementById('admin-loader');
+        productListContainer = document.querySelector('#products-tab-content #product-list-container');
+        orderListContainer = document.querySelector('#orders-tab-content #order-list-container');
+        createForm = document.getElementById('create-form');
+        createBtn = document.getElementById('create-btn');
+        editModal = document.getElementById('edit-modal');
+        editForm = document.getElementById('edit-form');
+        editSaveBtn = document.getElementById('edit-save-btn');
+        cancelEditBtn = document.getElementById('cancel-edit');
+        categoryForm = document.getElementById('category-form');
+        categoryList = document.getElementById('category-list');
+        categoryMessage = document.getElementById('category-message');
+        createCategorySelect = document.getElementById('create-category');
+        editCategorySelect = document.getElementById('edit-category');
+        variantModal = document.getElementById('variant-modal');
+        variantForm = document.getElementById('variant-form');
+        variantModalTitle = document.getElementById('variant-modal-title');
+        variantSizeSelect = document.getElementById('variant-size');
+        variantColorPalette = document.getElementById('variant-color-palette');
+        variantColorNameInput = document.getElementById('variant-color-name');
+        menuBtn = document.getElementById('menu-btn');
+        mobileMenu = document.getElementById('mobile-menu');
+        
+        createVariantsContainer = document.getElementById('create-variants-table-container');
+        createVariantsPlaceholder = document.getElementById('create-variants-placeholder');
+        editVariantsContainer = document.getElementById('edit-variants-table-container');
+        editVariantsPlaceholder = document.getElementById('edit-variants-placeholder');
+        
+        orderFilterSelect = document.getElementById('order-filter');
+        searchInput = document.getElementById('search-input');
+        searchButton = document.getElementById('search-button');
+
+        
+        // **All event listeners are now safely added here**
+        
+        cancelEditBtn.addEventListener('click', () => {
+            editModal.classList.add('hidden');
+        });
+
+        categoryForm.addEventListener('submit', handleCategoryFormSubmit);
+        createForm.addEventListener('submit', handleCreateFormSubmit);
+        editForm.addEventListener('submit', handleEditFormSubmit);
+        variantForm.addEventListener('submit', handleVariantFormSubmit);
+
+        menuBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); 
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!mobileMenu.contains(e.target) && !menuBtn.contains(e.target)) {
+                mobileMenu.classList.add('hidden');
+            }
+        });
+
+        // Add listeners for all order filtering
+        orderFilterSelect.addEventListener('change', filterOrders);
+        searchInput.addEventListener('input', filterOrders); // This keeps search-as-you-type
+        searchButton.addEventListener('click', filterOrders); // This adds click-to-search
+        
+        // --- Start Authentication and Data Loading ---
+        if (!token) {
+            window.location.href = 'login.html';
+            return;
+        }
+        try {
+            // =================== DEPLOYMENT FIX: Use API_URL ===================
+            const meResponse = await fetch(`${API_URL}/api/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+            // ===================================================================
+            const userData = await meResponse.json();
+            if (meResponse.ok && userData.isAdmin) {
+                welcomeMessage.textContent = `Welcome, Admin ${userData.name}!`;
+                
+                populateVariantInputs(); // Populate size dropdown and color palette
+                
+                await Promise.all([ loadCategories(), fetchProducts(), loadAllOrders() ]);
+                
+                adminLoader.style.display = 'none';
+                adminContent.classList.remove('hidden');
+                
+            } else {
+                throw new Error(userData.message || 'Not authorized as admin');
+            }
+        } catch (error) {
+            console.error('Auth or data load failed:', error);
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+    }); // ** END OF DOMContentLoaded **
+    
+
+    // --- 2. LOAD CATEGORIES ---
+    async function loadCategories() {
+        try {
+            // =================== DEPLOYMENT FIX: Use API_URL ===================
+            const res = await fetch(`${API_URL}/api/categories`); 
+            // ===================================================================
+            if (!res.ok) throw new Error('Failed to fetch categories');
+            const categories = await res.json();
+            categoryList.innerHTML = '';
+            createCategorySelect.innerHTML = '<option value="">-- Select a Category --</option>';
+            editCategorySelect.innerHTML = '<option value="">-- Select a Category --</option>';
+            if (categories.length === 0) {
+                 categoryList.innerHTML = '<p class="text-gray-500">No categories created yet.</p>';
+            }
+            categories.forEach(category => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'flex items-center justify-between bg-white p-2 rounded border border-pink-100';
+                const parentText = category.parentCategory && category.parentCategory !== 'None' ? category.parentCategory : '';
+                categoryDiv.innerHTML = `
+                    <div class="flex flex-col">
+                       <span class="font-medium">${category.name}</span>
+                       <span class="text-xs text-gray-500">${parentText}</span>
+                    </div>
+                    <button type="button" class="btn btn-delete-category" 
+                            onclick="deleteCategory('${category._id}', '${category.name}', '${category.parentCategory || 'None'}')">
+                        Delete
+                    </button>
+                `;
+                categoryList.appendChild(categoryDiv);
+                const option = document.createElement('option');
+                option.value = category._id;
+                option.textContent = `${category.name}${parentText ? ` (${parentText})` : ''}`;
+                createCategorySelect.appendChild(option.cloneNode(true));
+                editCategorySelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Failed to load categories:', error);
+            categoryList.innerHTML = '<p class="text-red-500">Error loading categories.</p>';
+            throw error; 
+        }
+    }
+    
+    // --- 3. CREATE CATEGORY ---
+    async function handleCategoryFormSubmit(e) {
+        e.preventDefault();
+        const nameInput = document.getElementById('category-name');
+        const parentInput = document.getElementById('category-parent');
+        try {
+            // =================== DEPLOYMENT FIX: Use API_URL ===================
+            const res = await fetch(`${API_URL}/api/categories`, { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ name: nameInput.value, parentCategory: parentInput.value })
+            });
+            // ===================================================================
+            if (res.ok) {
+                nameInput.value = '';
+                parentInput.value = 'None'; 
+                showMessage('Category created!', 'success');
+                await loadCategories(); 
+            } else {
+                showMessage((await res.json()).message, 'error');
+            }
+        } catch (error) {
+            showMessage('Server error.', 'error');
+        }
+    }
+
+    // --- 4. DELETE CATEGORY ---
+    async function deleteCategory(id, name, parent) {
+        const displayName = parent === 'None' ? name : `${name} (${parent})`;
+        if (!confirm(`Are you sure you want to delete "${displayName}"? Products using this category will show as N/A.`)) return;
+        try {
+            // =================== DEPLOYMENT FIX: Use API_URL ===================
+            const res = await fetch(`${API_URL}/api/categories/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            // ===================================================================
+            if (res.ok) {
+                showMessage(`Category "${displayName}" deleted!`, 'success');
+                await loadCategories();
+                await fetchProducts(); 
+            } else {
+                showMessage((await res.json()).message || 'Error deleting category', 'error');
+            }
+        } catch (error) {
+            showMessage('Server error while deleting category.', 'error');
+        }
+    }
+
+    // === 5. FETCH AND DISPLAY ALL PRODUCTS ===
+    async function fetchProducts() {
+        try {
+            // =================== DEPLOYMENT FIX: Use API_URL ===================
+            const res = await fetch(`${API_URL}/api/products`); 
+            // ===================================================================
+            if (!res.ok) throw new Error('Failed to fetch products');
+            const products = await res.json();
+            
+            let productHtml = `
+                <table class="min-w-full">
+                    <thead><tr>
+                        <th>Image</th> <th>Name</th> <th>Category</th>
+                        <th>Price</th> <th>Total Stock</th> <th>Actions</th>
+                    </tr></thead>
+                    <tbody>
+            `;
+            
+            if (products.length === 0) {
+                 productHtml += '<tr><td colspan="6" class="text-center text-gray-500">No products found.</td></tr>';
+            }
+
+            products.forEach(product => {
+                const imageUrl = product.images?.[0] || 'https://placehold.co/600x600/e2e8f0/64748b?text=No+Image';
+                const totalStock = product.variants?.reduce((acc, v) => acc + v.stock, 0) || 0;
+                const productData = {
+                    id: product._id, name: product.name, description: product.description,
+                    price: product.price, images: product.images,
+                    variants: product.variants || [], 
+                    categoryId: product.category?._id || '',
+                };
+                
+                const productJsonString = JSON.stringify(productData).replace(/"/g, '&quot;');
+
+                const categoryName = product.category?.name || 'N/A';
+                const parentName = (product.category?.parentCategory && product.category.parentCategory !== 'None') 
+                    ? ` (${product.category.parentCategory})` : '';
+                const categoryDisplay = product.category ? `${categoryName}${parentName}` : '<span class="text-red-500">N/A</span>';
+                
+                productHtml += `
+                    <tr data-id="${product._id}">
+                        <td><img src="${imageUrl}" alt="${product.name}" class="w-16 h-16 object-cover rounded"></td>
+                        <td class="font-medium">${product.name}</td>
+                        <td>${categoryDisplay}</td>
+                        <td>₹${product.price.toFixed(2)}</td>
+                        <td>${totalStock}</td>
+                        <td class="space-x-2">
+                            <button class="btn btn-edit" data-product-json="${productJsonString}" onclick="openEditModal(this)">Edit</button>
+                            <button class="btn btn-delete" onclick="deleteProduct('${product._id}')">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            productHtml += `</tbody></table>`;
+            productListContainer.innerHTML = productHtml;
+
+        } catch (error) {
+            console.error('Failed to fetch products:', error);
+            productListContainer.innerHTML = `<p class="text-red-500">Failed to load products. ${error.message}.</p>`;
+            throw error; 
+        }
+    }
+
+    // --- 6. UPLOAD IMAGES HELPER ---
+    async function uploadImages(fileList) {
+        const filesToUpload = fileList.filter(Boolean);
+        return Promise.all(filesToUpload.map(file => {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+            formData.append('cloud_name', CLOUDINARY_CLOUD_NAME);
+            return fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.ok ? res.json() : Promise.reject(new Error('Cloudinary upload failed')))
+            .then(data => data.secure_url);
+        }));
+    }
+
+    // --- 7. CREATE NEW PRODUCT ---
+    async function handleCreateFormSubmit(e) {
+        e.preventDefault();
+        createBtn.disabled = true;
+        createBtn.textContent = 'Saving...';
+        try {
+            if (document.getElementById('create-category').value === "") throw new Error('Please select a category.');
+            if (currentCreateVariants.length === 0) throw new Error('Please add at least one product variant.');
+
+            const files = [
+                document.getElementById('create-image-1').files[0],
+                document.getElementById('create-image-2').files[0],
+                document.getElementById('create-image-3').files[0]
+            ];
+            if (!files[0]) throw new Error('Please select at least one image.');
+            
+            createBtn.textContent = 'Uploading Images...';
+            const imageUrls = await uploadImages(files); 
+            
+            const productData = {
+                name: document.getElementById('create-name').value,
+                description: document.getElementById('create-desc').value,
+                price: parseFloat(document.getElementById('create-price').value),
+                category: document.getElementById('create-category').value,
+                images: imageUrls,
+                variants: currentCreateVariants
+            };
+            
+            createBtn.textContent = 'Saving Product...';
+            // =================== DEPLOYMENT FIX: Use API_URL ===================
+            const res = await fetch(`${API_URL}/api/products`, { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(productData)
+            });
+            // ===================================================================
+
+            if (res.ok) {
+                createForm.reset();
+                currentCreateVariants = [];
+                renderVariantsTable('create');
+                ['1', '2', '3'].forEach(i => document.getElementById(`create-image-${i}-filename`).textContent = 'No file chosen');
+                showMessage('Product created successfully!', 'success');
+                await fetchProducts(); 
+            } else {
+                throw new Error((await res.json()).message || 'Error saving product');
+            }
+        } catch (error) {
+            showMessage(error.message, 'error');
+        } finally {
+            createBtn.disabled = false;
+            createBtn.textContent = 'Create Product';
+        }
+    }
+
+    // --- 8. DELETE PRODUCT ---
+    async function deleteProduct(id) {
+        showMessage(`Are you sure? <button onclick="confirmDelete('${id}')" class="ml-2 bg-red-600 text-white p-1 rounded">Yes, Delete</button>`, 'error');
+    }
+    async function confirmDelete(id) {
+        try {
+            // =================== DEPLOYMENT FIX: Use API_URL ===================
+            const res = await fetch(`${API_URL}/api/products/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            // ===================================================================
+            if (res.ok) {
+                showMessage('Product deleted.', 'success');
+                await fetchProducts(); 
+            } else {
+                showMessage(`Error: ${(await res.json()).message}`, 'error');
+            }
+        } catch (error) {
+            showMessage('Server error during deletion.', 'error');
+        }
+    }
+    
+    // --- 9. OPEN EDIT MODAL ---
+    function openEditModal(buttonElement) {
+        try {
+            const productData = JSON.parse(buttonElement.getAttribute('data-product-json'));
+            
+            document.getElementById('edit-id').value = productData.id;
+            document.getElementById('edit-name').value = productData.name;
+            document.getElementById('edit-desc').value = productData.description;
+            document.getElementById('edit-price').value = productData.price;
+            document.getElementById('edit-category').value = productData.categoryId;
+            
+            currentEditVariants = [...productData.variants]; 
+            
+            renderVariantsTable('edit');
+
+            document.getElementById('edit-hidden-images').value = JSON.stringify(productData.images || []);
+            const imgContainer = document.getElementById('edit-current-images-container');
+            imgContainer.innerHTML = '';
+            if (productData.images?.length > 0) {
+                productData.images.forEach(url => {
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.className = 'w-16 h-16 object-cover rounded';
+                    imgContainer.appendChild(img);
+                });
+            } else {
+                imgContainer.innerHTML = '<p class="text-sm text-gray-500">No current images.</p>';
+            }
+            
+            ['1', '2', '3'].forEach(i => {
+                document.getElementById(`edit-image-${i}`).value = '';
+                document.getElementById(`edit-image-${i}-filename`).textContent = 'No file chosen';
+            });
+            
+            editModal.classList.remove('hidden');
+        } catch (error) {
+            console.error('Failed to open edit modal:', error); 
+            showMessage('Error parsing product data. Check for special characters.', 'error');
+        }
+    }
+    
+    // --- 11. SUBMIT EDIT FORM ---
+    async function handleEditFormSubmit(e) {
+        e.preventDefault();
+        editSaveBtn.disabled = true;
+        editSaveBtn.textContent = 'Saving...';
+        try {
+            const id = document.getElementById('edit-id').value;
+            const newFiles = [
+                document.getElementById('edit-image-1').files[0],
+                document.getElementById('edit-image-2').files[0],
+                document.getElementById('edit-image-3').files[0]
+            ];
+            
+            let imageUrls;
+            if (newFiles.some(Boolean)) {
+                editSaveBtn.textContent = 'Uploading new images...';
+                imageUrls = await uploadImages(newFiles.filter(Boolean));
+            } else {
+                imageUrls = JSON.parse(document.getElementById('edit-hidden-images').value);
+            }
+            if (imageUrls.length === 0) throw new Error('Product must have at least one image.');
+            if (currentEditVariants.length === 0) throw new Error('Product must have at least one variant.');
+            if (document.getElementById('edit-category').value === "") throw new Error('Please select a category.');
+
+            const updatedProduct = {
+                name: document.getElementById('edit-name').value,
+                description: document.getElementById('edit-desc').value,
+                price: parseFloat(document.getElementById('edit-price').value),
+                category: document.getElementById('edit-category').value,
+                images: imageUrls,
+                variants: currentEditVariants
+            };
+            
+            // =================== DEPLOYMENT FIX: Use API_URL ===================
+            const res = await fetch(`${API_URL}/api/products/${id}`, { 
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(updatedProduct)
+            });
+            // ===================================================================
+            
+            if (res.ok) {
+                editModal.classList.add('hidden'); 
+                showMessage('Product updated!', 'success');
+                await fetchProducts(); 
+            } else {
+                throw new Error((await res.json()).message || 'Error updating product');
+            }
+        } catch (error) {
+            showMessage(error.message, 'error');
+        } finally {
+            editSaveBtn.disabled = false;
+            editSaveBtn.textContent = 'Save Changes';
+        }
+    }
+
+    // --- 12. LOAD ALL ORDERS ---
+    async function loadAllOrders() {
+        try {
+            // =================== DEPLOYMENT FIX: Use API_URL ===================
+            const res = await fetch(`${API_URL}/api/orders`, { headers: { 'Authorization': `Bearer ${token}` } });
+            // ===================================================================
+            if (!res.ok) throw new Error((await res.json()).message || 'Failed to fetch orders');
+            allOrders = await res.json(); 
+            renderOrders(allOrders); 
+        } catch (error) {
+            console.error('Failed to fetch all orders:', error);
+            orderListContainer.innerHTML = `<p class="text-red-500">Failed to load orders: ${error.message}</p>`;
+            throw error; 
+        }
+    }
+
+    // --- 13. FILTER/SEARCH & RENDER ORDERS ---
+    function filterOrders() {
+        const filterValue = orderFilterSelect.value;
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const now = new Date();
+        let dateFiltered = [];
+
+        if (filterValue === 'all') dateFiltered = allOrders;
+        else if (filterValue === '30days') {
+            const limit = new Date(new Date().setDate(now.getDate() - 30));
+            dateFiltered = allOrders.filter(o => new Date(o.createdAt) >= limit);
+        } else if (filterValue === '3months') { 
+            const limit = new Date(new Date().setMonth(now.getMonth() - 3));
+            dateFiltered = allOrders.filter(o => new Date(o.createdAt) >= limit);
+        } else if (filterValue === '6months') { 
+            const limit = new Date(new Date().setMonth(now.getMonth() - 6));
+            dateFiltered = allOrders.filter(o => new Date(o.createdAt) >= limit);
+        } else if (filterValue === '2025') {
+            dateFiltered = allOrders.filter(o => new Date(o.createdAt).getFullYear() === 2025);
+        }
+        
+        const finalFiltered = dateFiltered.filter(o => {
+            const customerName = o.user?.name ? o.user.name.toLowerCase() : '';
+            return o._id.toLowerCase().includes(searchTerm) || customerName.includes(searchTerm);
+        });
+        
+        renderOrders(finalFiltered);
+    }
+
+    function renderOrders(orders) {
+        let orderHtml = `
+            <table class="min-w-full">
+                <thead><tr>
+                    <th>Order ID</th> <th>Customer</th> <th>Address</th> <th>Total</th>
+                    <th>Pay Method</th> <th>Transaction ID</th> <th>Placed On</th> <th>Delivered On</th>
+                    <th>Paid</th> <th>Delivered</th> <th>Actions</th>
+                </tr></thead>
+                <tbody>
+        `;
+        if (orders.length === 0) {
+            orderHtml += '<tr><td colspan="11" class="text-center text-gray-500">No orders found.</td></tr>';
+        }
+        orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        orders.forEach(order => {
+            let paid, delivery, actions, pMethod, pId;
+            const pDetails = order.paymentDetails;
+            const placedOn = new Date(order.createdAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' });
+            const deliveredOn = order.isDelivered ? new Date(order.deliveredAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : '---';
+
+            if (order.isCancelled) {
+                paid = `<span class="font-medium text-gray-500">---</span>`;
+                delivery = `<span class="font-medium text-gray-500">Cancelled</span>`;
+                actions = ``; 
+                pMethod = `<span class="text-xs text-gray-500">---</span>`;
+                pId = `<span class="text-xs text-gray-500">---</span>`;
+            } else if (!order.isPaid) {
+                paid = `<span class="font-medium text-red-600">No</span>`;
+                delivery = `<span class="font-medium text-yellow-600">Awaiting Payment</span>`;
+                actions = ``;
+                pMethod = `<span class="text-xs text-gray-500">N/A</span>`;
+                pId = `<span class="text-xs text-gray-500">N/A</span>`;
+            } else { 
+                paid = `<span class="font-medium text-green-600">Yes</span>`;
+                pMethod = pDetails?.paymentMethod ? `<span class="text-xs font-medium uppercase">${pDetails.paymentMethod}</span>` : `<span class="text-xs text-gray-500">N/A</span>`;
+                pId = pDetails?.razorpayPaymentId ? `<span class="text-xs font-mono">${pDetails.razorpayPaymentId}</span>` : `<span class="text-xs text-gray-500">N/A</span>`;
+                if (!order.isDelivered) {
+                    delivery = `<span class="font-medium text-yellow-600">Processing</span>`;
+                    actions = `<button class="btn btn-primary-sm w-full" onclick="markAsDelivered('${order._id}')">Mark Delivered</button>`;
+                } else {
+                    delivery = `<span class="font-medium text-pink-600">Yes</span>`;
+                    actions = `<span class="text-xs text-gray-500">Completed</span>`;
+                }
+            }
+            const shipping = order.shippingAddress;
+            const addressHtml = shipping ? `
+                <div class="text-xs">
+                    <p class="font-medium">${shipping.fullName}</p>
+                    <p>${shipping.phone}</p>
+                    <p>${shipping.address || ''}, ${shipping.city || ''}, ${shipping.postalCode || ''}</p>
+                </div>
+            ` : `<span class="text-xs text-red-500">No address</span>`;
+            actions += `<button class="btn btn-delete mt-2 w-full text-center" onclick="deleteOrder('${order._id}')" title="Delete Order"><i class="fas fa-trash mr-1"></i> Delete</button>`;
+            orderHtml += `
+                <tr data-id="${order._id}">
+                    <td class="text-xs font-mono">${order._id}</td>
+                    <td class="text-xs"><p class="font-medium">${order.user.name}</p><p class="text-gray-600">${order.user.email}</p></td>
+                    <td>${addressHtml}</td>
+                    <td class="font-medium">₹${order.totalPrice.toFixed(2)}</td>
+                    <td>${pMethod}</td> <td>${pId}</td>
+                    <td class="text-xs">${placedOn}</td> <td class="text-xs">${deliveredOn}</td>
+                    <td class="font-bold">${paid}</td> <td class="font-bold">${delivery}</td>
+                    <td>${actions}</td>
+                </tr>
+            `;
+        });
+        orderListContainer.innerHTML = orderHtml + `</tbody></table>`;
+    }
+
+    // --- 14. UPDATE ORDER STATUS ---
+    async function markAsDelivered(orderId) {
+        if (!confirm('Mark as delivered?')) return;
+        try {
+            // =================== DEPLOYMENT FIX: Use API_URL ===================
+            const res = await fetch(`${API_URL}/api/orders/${orderId}/deliver`, { method: 'PUT', headers: { 'Authorization': `Bearer ${token}` } });
+            // ===================================================================
+            if (res.ok) {
+                showMessage('Order marked as delivered.', 'success');
+                await loadAllOrders();
+            } else {
+                showMessage(`Error: ${(await res.json()).message}`, 'error');
+            }
+        } catch (error) {
+            showMessage('Server error.', 'error');
+        }
+    }
+    
+    async function deleteOrder(orderId) {
+        if (!confirm('Permanently delete this order? This cannot be undone.')) return;
+        try {
+            // =================== DEPLOYMENT FIX: Use API_URL ===================
+            const res = await fetch(`${API_URL}/api/orders/${orderId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            // ===================================================================
+            if (res.ok) {
+                showMessage('Order deleted.', 'success');
+                await loadAllOrders(); 
+            } else {
+                showMessage(`Error: ${(await res.json()).message}`, 'error');
+            }
+        } catch (error) {
+            showMessage('Server error.', 'error');
+        }
+    }
+
+    // --- 15. SHOW/HIDE MESSAGE ---
+    let messageTimer;
+    function showMessage(message, type = 'success') {
+        const messageBox = document.getElementById('message-box');
+        const messageText = document.getElementById('message-text');
+        clearTimeout(messageTimer);
+        messageText.innerHTML = message; 
+        messageBox.style.borderColor = type === 'success' ? '#22c55e' : '#ef4444';
+        messageText.style.color = type === 'success' ? '#15803d' : '#b91c1c';
+        messageBox.style.display = 'block';
+        messageTimer = setTimeout(() => { messageBox.style.display = 'none'; }, 5000); 
+    }
+    
+    // === 16. VARIANT MANAGEMENT (Color Palette) ===
+    
+    function populateVariantInputs() {
+        // 1. Populate Sizes
+        variantSizeSelect.innerHTML = STANDARD_SIZES.map(s => `<option value="${s}">${s}</option>`).join('');
+        
+        // 2. Populate Color Palette
+        variantColorPalette.innerHTML = ''; // Clear the "loading..." text
+        PREDEFINED_COLORS.forEach(color => {
+            const swatch = document.createElement('div');
+            swatch.className = 'color-swatch';
+            swatch.style.backgroundColor = color.hex;
+            swatch.title = color.name; // Tooltip on hover
+            swatch.dataset.colorName = color.name; // Store the name
+            
+            swatch.addEventListener('click', () => selectColor(color.name));
+            
+            variantColorPalette.appendChild(swatch);
+        });
+    }
+
+    function selectColor(colorName) {
+        variantColorNameInput.value = colorName;
+        document.querySelectorAll('#variant-color-palette .color-swatch').forEach(sw => {
+            sw.classList.toggle('selected', sw.dataset.colorName === colorName);
+        });
+    }
+
+    function openVariantModal(mode) {
+        currentVariantMode = mode; 
+        currentVariantEditIndex = null;
+        variantForm.reset(); 
+        document.getElementById('variant-stock').value = 0; 
+        variantModalTitle.textContent = 'Add New Variant';
+        selectColor(PREDEFINED_COLORS[0].name); // Select "Standard" by default
+        variantModal.classList.remove('hidden');
+    }
+
+    function closeVariantModal() {
+        variantModal.classList.add('hidden');
+    }
+
+    function handleVariantFormSubmit(e) {
+        e.preventDefault();
+        const size = variantSizeSelect.value;
+        const stock = parseInt(document.getElementById('variant-stock').value, 10);
+        
+        const colorName = variantColorNameInput.value;
+        if (!colorName) {
+            showMessage('Please select a color.', 'error');
+            return;
+        }
+        const colorHex = PREDEFINED_COLORS.find(c => c.name === colorName)?.hex || '#FFFFFF'; 
+        
+        if (isNaN(stock) || stock < 0) {
+            showMessage('Stock must be a non-negative number.', 'error');
+            return;
+        }
+
+        const variant = { size, colorName, colorHex, stock };
+        const variantList = (currentVariantMode === 'create') ? currentCreateVariants : currentEditVariants;
+        const isDuplicate = variantList.some(
+            (v, i) => v.size === size && v.colorName === colorName && i !== currentVariantEditIndex
+        );
+        if (isDuplicate) {
+            showMessage('This Size/Color variant already exists.', 'error');
+            return;
+        }
+        if (currentVariantEditIndex !== null) {
+            variantList[currentVariantEditIndex] = variant;
+        } else {
+            variantList.push(variant);
+        }
+        renderVariantsTable(currentVariantMode);
+        closeVariantModal();
+    }
+
+    function renderVariantsTable(mode) {
+        const variantList = (mode === 'create') ? currentCreateVariants : currentEditVariants;
+        const container = (mode === 'create') ? createVariantsContainer : editVariantsContainer;
+        const placeholder = (mode === 'create') ? createVariantsPlaceholder : editVariantsPlaceholder;
+        
+        if (!container || !placeholder) {
+            console.error('Variant table elements not found for mode:', mode);
+            return;
+        }
+
+        if (variantList.length === 0) {
+            container.innerHTML = '';
+            placeholder.style.display = 'block'; 
+            return;
+        }
+        placeholder.style.display = 'none';
+        let tableHtml = `
+            <table class="variant-table">
+                <thead><tr><th>Size</th><th>Color</th><th>Stock</th><th>Actions</th></tr></thead>
+                <tbody>
+        `;
+        variantList.forEach((variant, index) => {
+            const colorHex = variant.colorHex || '#ffffff';
+            tableHtml += `
+                <tr>
+                    <td>${variant.size}</td>
+                    <td>
+                        <span class="variant-color-swatch" style="background-color: ${colorHex};"></span>
+                        ${variant.colorName}
+                    </td>
+                    <td>${variant.stock}</td>
+                    <td>
+                        <button type="button" class="btn btn-edit" style="padding: 2px 6px; font-size: 0.75rem;" onclick="editVariant('${mode}', ${index})">Edit</button>
+                        <button type="button" class="btn btn-delete" style="padding: 2px 6px; font-size: 0.75rem;" onclick="deleteVariant('${mode}', ${index})">Del</button>
+                    </td>
+                </tr>
+            `;
+        });
+        container.innerHTML = tableHtml + `</tbody></table>`;
+    }
+
+    function editVariant(mode, index) {
+        const variantList = (mode === 'create') ? currentCreateVariants : currentEditVariants;
+        const variant = variantList[index];
+        currentVariantMode = mode;
+        currentVariantEditIndex = index;
+        
+        variantSizeSelect.value = variant.size;
+        document.getElementById('variant-stock').value = variant.stock;
+        
+        selectColor(variant.colorName); 
+        
+        variantModalTitle.textContent = 'Edit Variant';
+        variantModal.classList.remove('hidden');
+    }
+
+    function deleteVariant(mode, index) {
+        if (!confirm('Remove this variant?')) return;
+        const variantList = (mode === 'create') ? currentCreateVariants : currentEditVariants;
+        variantList.splice(index, 1); 
+        renderVariantsTable(mode);
+    }
+
+</script>
+</body>
+</html>

@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VARDHAN WEARS - Exclusive Fashion in Prayagraj</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <style>
+        /* Custom Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        .absolute { position: absolute; }
+        .relative { position: relative; }
+        
+        .category-btn {
+            background-color: #f3f4f6; /* gray-200 */
+            color: #374151; /* gray-700 */
+            padding: 0.5rem 1rem;
+            border-radius: 9999px; /* rounded-full */
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 500; /* font-medium */
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .category-btn:hover {
+            background-color: #e5e7eb; /* gray-300 */
+        }
+        .category-btn.active {
+            background-color: #2563eb; /* blue-600 */
+            color: white;
+        }
+
+        .parent-nav-link.active {
+            color: #2563eb; /* blue-600 */
+            font-weight: 600; /* semibold */
+            border-bottom: 2px solid #2563eb;
+        }
+    </style>
+    <link rel="manifest" href="/manifest.json">
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="text-2xl font-bold text-gray-800">Vardhan Wears</a>
+            
+            <div class="hidden md:flex space-x-8" id="parent-category-nav">
+                <a href="#collection" onclick="filterByParent('Men', this)" class="parent-nav-link text-gray-600 hover:text-gray-900 font-medium pb-1">Men</a>
+                <a href="#collection" onclick="filterByParent('Women', this)" class="parent-nav-link text-gray-600 hover:text-gray-900 font-medium pb-1">Women</a>
+                <a href="#collection" onclick="filterByParent('Kids', this)" class="parent-nav-link text-gray-600 hover:text-gray-900 font-medium pb-1">Kids</a>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                
+                <a href="cart.html" class="p-2 text-gray-600 hover:text-gray-900">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="sr-only">Cart</span>
+                </a>
+                
+                <a href="#home" class="hidden md:block text-gray-600 hover:text-gray-900 font-medium">Home</a>
+                
+                <div class="relative hidden md:block">
+                    <button onclick="toggleDesktopMenu()" id="desktop-menu-btn" class="text-gray-800 focus:outline-none text-xl p-2 rounded-md hover:bg-gray-100">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div id="desktop-menu-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
+                        </div>
+                </div>
+
+                <div class="md:hidden">
+                    <button id="menu-btn" class="text-gray-800 focus:outline-none">
+                        <i class="fas fa-bars fa-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        
+        <div id="mobile-nav-links" class="md:hidden hidden bg-white">
+             </div>
+    </header>
+    <main>
+        <section id="home" class="relative h-[80vh] bg-cover bg-center" style="background-image: url('mens clothing store intereior.jpg');">
+            <div class="absolute inset-0 bg-black bg-opacity-40"></div>
+            <div class="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-4">
+                <h1 class="text-5xl md:text-7xl font-bold mb-4 leading-tight">Define Your Presence.</h1>
+                <p class="text-lg md:text-xl max-w-2xl mb-8 font-light">The modern man's collection for the boardroom and beyond.</p>
+                <a href="#collection" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-md hover:bg-blue-700 transition duration-300">Explore Our Collection</a>
+            </div>
+        </section>
+
+        <section id="collection" class="py-20 bg-white">
+             <div class="container mx-auto px-6 text-center">
+                <h2 class="text-4xl font-bold mb-2">Our Curated Collection</h2>
+                <p class="text-gray-600 mb-8 max-w-2xl mx-auto">A glimpse into the unique pieces we offer. Visit our store to see the full range.</p>
+                
+                <div id="category-bar" class="flex flex-wrap justify-center gap-3 mb-12">
+                     </div>
+
+                <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <p class="col-span-3 text-gray-500">Loading products...</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="about" class="py-20 bg-gray-50">
+             <div class="container mx-auto px-6 flex flex-col md:flex-row items-center gap-12">
+                <div class="md:w-1/2">
+                    <img src="bg.avif" alt=" Vardhan Wear's Storefront" class="rounded-lg shadow-xl"
+                         onerror="this.onerror=null;this.src='https://placehold.co/600x400/e2e8f0/64748b?text=Our+Store';">
+                </div>
+                <div class="md:w-1/2 text-center md:text-left">
+                    <h2 class="text-4xl font-bold mb-4">Our Story</h2>
+                    <p class="text-gray-600 mb-4">
+                        Vardhan isn't just a name on a label—it's a philosophy. Rooted in the Sanskrit word for growth, it represents our core belief that style should be a personal evolution, not a fleeting trend. Founded in the historic heart of Prayagraj, Vardhan Wears was born from a frustration with mass-produced fashion that lacks a soul, seeking to bridge the gap between India's rich textile heritage and the modern wardrobe.
+                    </p>
+                    <p class="text-gray-600">
+                        Our mission is brought to life by collaborating with skilled local artisans. We source traditional handwoven fabrics and prints, which we then shape into clean, modern silhouettes. Each piece is a conversation between the old and the new—not just clothing, but wearable art with a story, designed for the individual who values both heritage and progress.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="py-20 bg-white">
+             <div class="container mx-auto px-6">
+                 <div class="text-center">
+                    <h2 class="text-4xl font-bold mb-2">Get In Touch</h2>
+                    <p class="text-gray-600 mb-12 max-w-2xl mx-auto">Visit our store in Civil Lines or send us a message. We'd love to hear from you.</p>
+                </div>
+                 <div class="flex flex-col lg:flex-row gap-12">
+                    <div class="lg:w-1/2">
+                        <div class="bg-gradient-to-b from-white to-pink-50 p-8 rounded-lg shadow-lg border border-pink-100 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 mb-8">
+                            <h3 class="text-2xl font-bold mb-4">Contact Information</h3>
+                            <div class="space-y-4 text-gray-700">
+                                <p><i class="fas fa-map-marker-alt w-6 text-gray-500"></i> 123, M.G. Marg, Civil Lines, Prayagraj, UP</p>
+                                <p><i class="fas fa-phone w-6 text-gray-500"></i> <a href="tel:+911234567890" class="hover:text-gray-900">+91 12345 67890</a></p>
+                                <p><i class="fas fa-envelope w-6 text-gray-500"></i> <a href="mailto:contact@vardhanwears.com" class="hover:text-gray-900">contact@vardhanwears.com</a></p>
+                                <p><i class="fas fa-clock w-6 text-gray-500"></i> Mon - Sat: 11:00 AM - 9:00 PM</p>
+                            </div>
+                        </div>
+                        
+                        <div class="rounded-lg overflow-hidden shadow-xl h-96">
+                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d115132.86175218701!2d81.79155702208173!3d25.47200256214188!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x399aca68f2221c5f%3A0xc61d568c04c35697!2sCivil%20Lines%2C%20Prayagraj%2C%20Uttar%20Pradesh!5e0!3m2!1sen!2sin!4v1730740058295!5m2!1sen!2sin" 
+                                class="w-full h-full" 
+                                style="border:0;" 
+                                allowfullscreen="" 
+                                loading="lazy" 
+                                referrerpolicy="no-referrer-when-downgrade">
+                            </iframe>
+                        </div>
+                        </div>
+                    
+                    <div class="lg:w-1/2 bg-gradient-to-b from-white to-pink-50 p-8 rounded-lg shadow-lg border border-pink-100 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                        <h3 class_ ="text-2xl font-bold mb-6">Send Us a Message</h3>
+                         
+                         <form action="https://formspree.io/f/xrbyvydj" method="POST">
+                            <div class="mb-4">
+                                <label for="name" class="block text-gray-700 font-medium mb-2">Your Name</label>
+                                <input type="text" id="name" name="name" class="w-full px-4 py-2 border border-gray-300 rounded-md" required>
+                            </div>
+                            <div class="mb-4">
+                                <label for="email" class="block text-gray-700 font-medium mb-2">Your Email</label>
+                                <input type="email" id="email" name="email" class="w-full px-4 py-2 border border-gray-300 rounded-md" required>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="order-id" class="block text-gray-700 font-medium mb-2">Order ID (Optional)</label>
+                                <input type="text" id="order-id" name="Order ID" placeholder="e.g., 60b8...9c" class="w-full px-4 py-2 border border-gray-300 rounded-md">
+                            </div>
+                            <div class="mb-6">
+                                <label for="message" class="block text-gray-700 font-medium mb-2">Message</label>
+                                <textarea id="message" name="message" rows="5" class="w-full px-4 py-2 border border-gray-300 rounded-md" required></textarea>
+                            </div>
+                            <button type="submit" class="w-full bg-pink-600 text-white font-bold py-3 px-6 rounded-md hover:bg-pink-700">Send Message</button>
+                        </form>
+                    </div>
+                 </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-6 text-center">
+            <p>© 2025 Vardhan Wears. All Rights Reserved.</p>
+            <p class="text-sm text-gray-400 mt-2">Website designed by Yash Vardhan Pandey.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- Global State ---
+        let allProducts = [];
+        let allCategories = [];
+        // =================== DEPLOYMENT FIX: Add API_URL ===================
+        const API_URL = 'https://vardhan-wears-api.onrender.com';
+        // ===================================================================
+
+
+        // --- Menu Toggles & Auth (Unchanged) ---
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileNavLinks = document.getElementById('mobile-nav-links'); 
+        menuBtn.addEventListener('click', () => {
+            mobileNavLinks.classList.toggle('hidden');
+        });
+
+        function toggleDesktopMenu() {
+            document.getElementById('desktop-menu-dropdown').classList.toggle('hidden');
+        }
+        // Make sure it's globally accessible
+        window.toggleDesktopMenu = toggleDesktopMenu;
+
+        window.onclick = function(event) {
+            if (!event.target.matches('#desktop-menu-btn') && !event.target.closest('#desktop-menu-btn')) {
+                const dropdown = document.getElementById('desktop-menu-dropdown');
+                if (dropdown && !dropdown.classList.contains('hidden')) {
+                    dropdown.classList.add('hidden');
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // PWA SERVICE WORKER REGISTRATION
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('Service Worker registered successfully:', registration);
+                    })
+                    .catch((error) => {
+                        console.error('Service Worker registration failed:', error);
+                    });
+            }
+
+            checkAuth(); 
+            initializeApp(); 
+        });
+
+        async function checkAuth() {
+            const token = localStorage.getItem('token');
+            const desktopDropdown = document.getElementById('desktop-menu-dropdown');
+            let desktopLinks = '';
+            let mobileLinks = '';
+            desktopLinks = `
+                <a href="#collection" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Products</a>
+                <a href="#about" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">About</a>
+                <a href="#contact" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Contact</a>
+                <hr class="my-1 border-gray-100">
+            `;
+            mobileLinks = `
+                <a href="#home" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Home</a>
+                <a href="#collection" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Products</a>
+                <a href="#about" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">About</a>
+                <a href="#contact" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Contact</a>
+                <hr class="my-1 border-gray-100">
+            `;
+            if (!token) {
+                desktopLinks += `
+                            <a href="login.html" class="block px-4 py-2 text-sm text-pink-600 font-bold hover:bg-pink-50">Login</a>
+                            <a href="register.html" class="block px-4 py-2 text-sm text-pink-600 font-bold hover:bg-pink-50">Register</a>
+                `;
+                mobileLinks += `
+                            <a href="login.html" class="block py-2 px-6 text-sm text-pink-600 font-bold hover:bg-pink-50">Login</a>
+                            <a href="register.html" class="block py-2 px-6 text-sm text-pink-600 font-bold hover:bg-pink-50">Register</a>
+                `;
+            } else {
+                try {
+                    // =================== DEPLOYMENT FIX: Use API_URL ===================
+                    const res = await fetch(`${API_URL}/api/auth/me`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    // ===================================================================
+                    if (!res.ok) {
+                        localStorage.removeItem('token');
+                        checkAuth(); 
+                        return;
+                    }
+                    const user = await res.json();
+                    
+                    desktopLinks += `
+                            <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-blue-600 font-medium hover:bg-gray-100">
+                                <i class="fas fa-user-circle w-5 mr-2"></i> My Profile
+                            </a>
+                            ${user.isAdmin ? '<a href="admin.html" class="block px-4 py-2 text-sm text-yellow-600 font-bold hover:bg-gray-100">Admin Panel</a>' : ''}
+                    `;
+                    mobileLinks += `
+                            <a href="profile.html" class="flex items-center block py-2 px-6 text-sm text-blue-600 font-medium hover:bg-gray-100">
+                                <i class="fas fa-user-circle w-5 mr-2"></i> My Profile
+                            </a>
+                            ${user.isAdmin ? '<a href="admin.html" class="block py-2 px-6 text-sm text-yellow-600 font-bold hover:bg-gray-100">Admin Panel</a>' : ''}
+                    `;
+                    
+                    const contactName = document.getElementById('name');
+                    const contactEmail = document.getElementById('email');
+                    if (contactName && contactEmail) {
+                        contactName.value = user.name;
+                        contactEmail.value = user.email;
+                    }
+
+                } catch (error) {
+                    console.error('Auth check failed:', error);
+                    localStorage.removeItem('token');
+                    checkAuth(); 
+                }
+            }
+            desktopDropdown.innerHTML = desktopLinks;
+            mobileNavLinks.innerHTML = mobileLinks;
+        }
+        
+        function logout() {
+            localStorage.removeItem('token'); 
+            window.location.href = 'index.html'; 
+        }
+
+        
+        // --- Collection & Filtering Logic (Unchanged) ---
+        async function initializeApp() {
+            try {
+                // =================== DEPLOYMENT FIX: Use API_URL ===================
+                const [productRes, categoryRes] = await Promise.all([
+                    fetch(`${API_URL}/api/products`),
+                    fetch(`${API_URL}/api/categories`)
+                ]);
+                // ===================================================================
+
+                if (!productRes.ok) throw new Error('Could not load products');
+                if (!categoryRes.ok) throw new Error('Could not load categories');
+
+                allProducts = await productRes.json();
+                allCategories = await categoryRes.json();
+
+                const defaultParent = 'Men';
+                filterByParent(defaultParent, document.querySelector('#parent-category-nav a')); 
+
+            } catch (error) {
+                console.error('Initialization error:', error);
+                document.getElementById('product-grid').innerHTML = '<p class="col-span-3 text-red-500 text-center">Failed to load collection. Please ensure the backend server is running and `productRoutes.js` is fixed.</p>';
+            }
+        }
+
+        function filterByParent(parentCategory, clickedLink) {
+            document.querySelectorAll('.parent-nav-link').forEach(link => link.classList.remove('active'));
+            if(clickedLink) {
+                clickedLink.classList.add('active');
+            }
+
+            const productCategoryIds = new Set(allProducts.map(p => p.category ? p.category._id : null));
+            const activeSubCategories = allCategories.filter(cat => cat.parentCategory === parentCategory && productCategoryIds.has(cat._id));
+            
+            displayCategoryButtons(activeSubCategories);
+
+            const firstActiveSubCategory = activeSubCategories.length > 0 ? activeSubCategories[0] : null;
+
+            let productsToShow = [];
+            let emptyMessage = `No products found for ${parentCategory}.`;
+
+            if (firstActiveSubCategory) {
+                productsToShow = allProducts.filter(prod => prod.category && prod.category._id === firstActiveSubCategory._id);
+                emptyMessage = 'No products found in this category.'; 
+            }
+            
+            displayProducts(productsToShow, emptyMessage);
+
+            const firstButton = document.querySelector('.category-btn');
+            if (firstButton) {
+                firstButton.classList.add('active');
+            }
+        }
+
+        function filterProducts(subCategoryId, clickedButton) {
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+            if(clickedButton) {
+                clickedButton.classList.add('active');
+            }
+
+            const productsToShow = allProducts.filter(prod => prod.category && prod.category._id === subCategoryId);
+            
+            displayProducts(productsToShow, 'No products found in this category.');
+        }
+
+        function displayCategoryButtons(categories) {
+            const categoryBar = document.getElementById('category-bar');
+            categoryBar.innerHTML = ''; 
+            
+            if (categories.length === 0) {
+                 categoryBar.innerHTML = '<p class="text-gray-500">No sub-categories found.</p>';
+                 return;
+            }
+
+            categories.forEach((category) => {
+                const button = document.createElement('button');
+                button.className = 'category-btn';
+                button.textContent = category.name;
+                button.setAttribute('data-category-id', category._id);
+                button.onclick = () => filterProducts(category._id, button); // Pass 'this'
+                categoryBar.appendChild(button);
+            });
+        }
+
+        function displayProducts(products, emptyMessage) {
+            const productGrid = document.getElementById('product-grid');
+            productGrid.innerHTML = ''; 
+
+            if (products.length === 0) {
+                 productGrid.innerHTML = `<p class="col-span-3 text-gray-500">${emptyMessage}</p>`;
+                 return;
+            }
+
+            products.forEach(product => {
+                if (typeof product.category !== 'object' || product.category === null) {
+                    console.error('FATAL ERROR: productRoutes.js is not populating categories.');
+                    productGrid.innerHTML = '<p class="col-span-3 text-red-500 text-center">Fatal Error: Backend is not sending correct category data. Please restart server.</p>';
+                    return; 
+                }
+                
+                const productCard = document.createElement('div');
+                productCard.className = 'bg-gradient-to-b from-white to-pink-50 rounded-lg overflow-hidden shadow-lg border border-pink-100 flex flex-col transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 group';
+                
+                const imageUrl = product.images && product.images.length > 0 
+                    ? product.images[0] 
+                    : 'https://placehold.co/600x600/e2e8f0/64748b?text=No+Image';
+                
+                const description = product.description ? product.description.substring(0, 100) + '...' : 'No description available.';
+
+                productCard.innerHTML = `
+                    <a href="product.html?id=${product._id}" class="block overflow-hidden">
+                        <img src="${imageUrl}" alt="${product.name}" class="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105">
+                    </a>
+                    <div class="p-6 flex flex-col flex-grow">
+                        <h3 class="text-xl font-semibold mb-2 text-gray-800">${product.name}</h3>
+                        <p class="text-gray-600 text-sm mb-4 flex-grow">${description}</p>
+                        <div class="mt-auto flex justify-between items-center">
+                            <span class="text-lg font-bold text-pink-600">₹${product.price.toFixed(2)}</span>
+                            <button onclick="window.location.href='product.html?id=${product._id}'" class="bg-pink-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-pink-700 transition duration-300">
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+                `;
+                productGrid.appendChild(productCard);
+            });
+        }
+    </script>
+
+</body>
+</html>
