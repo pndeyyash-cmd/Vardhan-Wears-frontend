@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vardhan-wears-v1';
+const CACHE_NAME = 'vardhan-wears-v3'; // <-- FIX 1: Version bumped
 // This is the list of files to cache.
 // We are caching the core pages, not every single product or order.
 const URLS_TO_CACHE = [
@@ -12,7 +12,8 @@ const URLS_TO_CACHE = [
   '/reset-password.html',
   '/manifest.json',
   '/images/icons/android-chrome-192x192.png',
-  '/images/icons/android-chrome-512x512.png'
+  '/images/icons/android-chrome-512x512.png',
+  '/images/icons/icon-maskable-512x512.png' // <-- FIX 2: Added maskable icon
 ];
 
 // 1. Install the service worker
@@ -35,9 +36,9 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
+          if (cache !== CACHE_NAME) { // If the cache name is not our new one...
             console.log('Service Worker: Clearing old cache');
-            return caches.delete(cache);
+            return caches.delete(cache); // ...delete it.
           }
         })
       );
