@@ -1,6 +1,6 @@
 {
   "name": "Vardhan Wears",
-  "short_name": "VW",
+  "short_name": "Vardhan",
   "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#fdf2f8",
@@ -16,6 +16,12 @@
       "src": "/images/icons/android-chrome-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
+    },
+    {
+      "src": "/images/icons/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
