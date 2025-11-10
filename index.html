@@ -27,30 +27,6 @@
         
         .absolute { position: absolute; }
         .relative { position: relative; }
-        
-        .category-btn {
-            background-color: #f3f4f6; /* gray-200 */
-            color: #374151; /* gray-700 */
-            padding: 0.5rem 1rem;
-            border-radius: 9999px; /* rounded-full */
-            font-size: 0.875rem; /* text-sm */
-            font-weight: 500; /* font-medium */
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-        .category-btn:hover {
-            background-color: #e5e7eb; /* gray-300 */
-        }
-        .category-btn.active {
-            background-color: #2563eb; /* blue-600 */
-            color: white;
-        }
-
-        .parent-nav-link.active {
-            color: #2563eb; /* blue-600 */
-            font-weight: 600; /* semibold */
-            border-bottom: 2px solid #2563eb;
-        }
     </style>
     <link rel="manifest" href="/manifest.json">
 </head>
@@ -60,11 +36,7 @@
         <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
             <a href="index.html" class="text-2xl font-bold text-gray-800">Vardhan Wears</a>
             
-            <div class="hidden md:flex space-x-8" id="parent-category-nav">
-                <a href="#collection" onclick="filterByParent('Men', this)" class="parent-nav-link text-gray-600 hover:text-gray-900 font-medium pb-1">Men</a>
-                <a href="#collection" onclick="filterByParent('Women', this)" class="parent-nav-link text-gray-600 hover:text-gray-900 font-medium pb-1">Women</a>
-                <a href="#collection" onclick="filterByParent('Kids', this)" class="parent-nav-link text-gray-600 hover:text-gray-900 font-medium pb-1">Kids</a>
-            </div>
+            <!-- === REMOVED: Desktop Nav for Men, Women, Kids === -->
 
             <div class="flex items-center space-x-4">
                 
@@ -73,14 +45,15 @@
                     <span class="sr-only">Cart</span>
                 </a>
                 
-                <a href="#home" class="hidden md:block text-gray-600 hover:text-gray-900 font-medium">Home</a>
+                <a href="index.html" class="hidden md:block text-gray-600 hover:text-gray-900 font-medium">Home</a>
                 
                 <div class="relative hidden md:block">
                     <button onclick="toggleDesktopMenu()" id="desktop-menu-btn" class="text-gray-800 focus:outline-none text-xl p-2 rounded-md hover:bg-gray-100">
                         <i class="fas fa-bars"></i>
                     </button>
                     <div id="desktop-menu-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
-                        </div>
+                        <!-- Content is injected by checkAuth() -->
+                    </div>
                 </div>
 
                 <div class="md:hidden">
@@ -91,8 +64,9 @@
             </div>
         </nav>
         
+        <!-- Mobile nav content is injected by checkAuth() -->
         <div id="mobile-nav-links" class="md:hidden hidden bg-white">
-             </div>
+        </div>
     </header>
     <main>
         <section id="home" class="relative h-[80vh] bg-cover bg-center" style="background-image: url('mens clothing store intereior.jpg');">
@@ -100,7 +74,7 @@
             <div class="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-4">
                 <h1 class="text-5xl md:text-7xl font-bold mb-4 leading-tight">Define Your Presence.</h1>
                 <p class="text-lg md:text-xl max-w-2xl mb-8 font-light">The modern man's collection for the boardroom and beyond.</p>
-                <a href="#collection" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-md hover:bg-blue-700 transition duration-300">Explore Our Collection</a>
+                <a href="shop.html" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-md hover:bg-blue-700 transition duration-300">Explore Our Collection</a>
             </div>
         </section>
 
@@ -109,11 +83,13 @@
                 <h2 class="text-4xl font-bold mb-2">Our Curated Collection</h2>
                 <p class="text-gray-600 mb-8 max-w-2xl mx-auto">A glimpse into the unique pieces we offer. Visit our store to see the full range.</p>
                 
-                <div id="category-bar" class="flex flex-wrap justify-center gap-3 mb-12">
-                     </div>
-
+                <!-- This grid will be filled by the loadFeaturedProducts() function -->
                 <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <p class="col-span-3 text-gray-500">Loading products...</p>
+                    <p class="col-span-3 text-gray-500">Loading featured products...</p>
+                </div>
+
+                <div class="mt-12">
+                    <a href="shop.html" class="bg-gray-800 text-white font-bold py-3 px-8 rounded-md hover:bg-gray-900 transition duration-300">View All Products</a>
                 </div>
             </div>
         </section>
@@ -141,7 +117,7 @@
                  <div class="text-center">
                     <h2 class="text-4xl font-bold mb-2">Get In Touch</h2>
                     <p class="text-gray-600 mb-12 max-w-2xl mx-auto">Visit our store in Civil Lines or send us a message. We'd love to hear from you.</p>
-                </div>
+                 </div>
                  <div class="flex flex-col lg:flex-row gap-12">
                     <div class="lg:w-1/2">
                         <div class="bg-gradient-to-b from-white to-pink-50 p-8 rounded-lg shadow-lg border border-pink-100 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 mb-8">
@@ -190,7 +166,7 @@
                         </form>
                     </div>
                  </div>
-            </div>
+             </div>
         </section>
     </main>
 
@@ -203,14 +179,9 @@
 
     <script>
         // --- Global State ---
-        let allProducts = [];
-        let allCategories = [];
-        // =================== DEPLOYMENT FIX: Add API_URL ===================
         const API_URL = 'https://vardhan-wears-api.onrender.com';
-        // ===================================================================
 
-
-        // --- Menu Toggles & Auth (Unchanged) ---
+        // --- Menu Toggles & Auth ---
         const menuBtn = document.getElementById('menu-btn');
         const mobileNavLinks = document.getElementById('mobile-nav-links'); 
         menuBtn.addEventListener('click', () => {
@@ -220,7 +191,6 @@
         function toggleDesktopMenu() {
             document.getElementById('desktop-menu-dropdown').classList.toggle('hidden');
         }
-        // Make sure it's globally accessible
         window.toggleDesktopMenu = toggleDesktopMenu;
 
         window.onclick = function(event) {
@@ -246,63 +216,71 @@
             }
 
             checkAuth(); 
-            initializeApp(); 
+            loadFeaturedProducts(); 
         });
 
         async function checkAuth() {
             const token = localStorage.getItem('token');
             const desktopDropdown = document.getElementById('desktop-menu-dropdown');
+            const mobileNav = document.getElementById('mobile-nav-links');
+            
             let desktopLinks = '';
             let mobileLinks = '';
-            desktopLinks = `
-                <a href="#collection" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Products</a>
-                <a href="#about" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">About</a>
-                <a href="#contact" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Contact</a>
-                <hr class="my-1 border-gray-100">
-            `;
+
+            // --- FIXED: Mobile links removed Men/Women/Kids/All Products ---
             mobileLinks = `
-                <a href="#home" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Home</a>
-                <a href="#collection" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Products</a>
-                <a href="#about" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">About</a>
-                <a href="#contact" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Contact</a>
+                <a href="index.html" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Home</a>
+                <a href="shop.html" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Shop</a>
+                <a href="index.html#about" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">About</a>
+                <a href="index.html#contact" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Contact</a>
                 <hr class="my-1 border-gray-100">
             `;
+            
+            // --- FIXED: Desktop links. "All Products" is now "Shop" ---
+            desktopLinks = `
+                <a href="shop.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Shop</a>
+                <a href="index.html#about" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">About</a>
+                <a href="index.html#contact" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Contact</a>
+                <hr class="my-1 border-gray-100">
+            `;
+
             if (!token) {
                 desktopLinks += `
-                            <a href="login.html" class="block px-4 py-2 text-sm text-pink-600 font-bold hover:bg-pink-50">Login</a>
-                            <a href="register.html" class="block px-4 py-2 text-sm text-pink-600 font-bold hover:bg-pink-50">Register</a>
+                    <a href="login.html" class="block px-4 py-2 text-sm text-pink-600 font-bold hover:bg-pink-50">Login</a>
+                    <a href="register.html" class="block px-4 py-2 text-sm text-pink-600 font-bold hover:bg-pink-50">Register</a>
                 `;
                 mobileLinks += `
-                            <a href="login.html" class="block py-2 px-6 text-sm text-pink-600 font-bold hover:bg-pink-50">Login</a>
-                            <a href="register.html" class="block py-2 px-6 text-sm text-pink-600 font-bold hover:bg-pink-50">Register</a>
+                    <a href="login.html" class="block py-2 px-6 text-sm text-pink-600 font-bold hover:bg-pink-50">Login</a>
+                    <a href="register.html" class="block py-2 px-6 text-sm text-pink-600 font-bold hover:bg-pink-50">Register</a>
                 `;
             } else {
                 try {
-                    // =================== DEPLOYMENT FIX: Use API_URL ===================
                     const res = await fetch(`${API_URL}/api/auth/me`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    // ===================================================================
                     if (!res.ok) {
                         localStorage.removeItem('token');
-                        checkAuth(); 
+                        checkAuth(); // Re-run to show logged-out state
                         return;
                     }
                     const user = await res.json();
                     
+                    // --- === REMOVED LOGOUT BUTTON === ---
                     desktopLinks += `
-                            <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-blue-600 font-medium hover:bg-gray-100">
-                                <i class="fas fa-user-circle w-5 mr-2"></i> My Profile
-                            </a>
-                            ${user.isAdmin ? '<a href="admin.html" class="block px-4 py-2 text-sm text-yellow-600 font-bold hover:bg-gray-100">Admin Panel</a>' : ''}
+                        <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-blue-600 font-medium hover:bg-gray-100">
+                            <i class="fas fa-user-circle w-5 mr-2"></i> My Profile
+                        </a>
+                        ${user.isAdmin ? '<a href="admin.html" class="block px-4 py-2 text-sm text-yellow-600 font-bold hover:bg-gray-100">Admin Panel</a>' : ''}
                     `;
                     mobileLinks += `
-                            <a href="profile.html" class="flex items-center block py-2 px-6 text-sm text-blue-600 font-medium hover:bg-gray-100">
-                                <i class="fas fa-user-circle w-5 mr-2"></i> My Profile
-                            </a>
-                            ${user.isAdmin ? '<a href="admin.html" class="block py-2 px-6 text-sm text-yellow-600 font-bold hover:bg-gray-100">Admin Panel</a>' : ''}
+                        <a href="profile.html" class="flex items-center block py-2 px-6 text-sm text-blue-600 font-medium hover:bg-gray-100">
+                            <i class="fas fa-user-circle w-5 mr-2"></i> My Profile
+                        </a>
+                        ${user.isAdmin ? '<a href="admin.html" class="block py-2 px-6 text-sm text-yellow-600 font-bold hover:bg-gray-100">Admin Panel</a>' : ''}
                     `;
+                    // --- === END OF REMOVAL === ---
                     
+                    // Pre-fill contact form
                     const contactName = document.getElementById('name');
                     const contactEmail = document.getElementById('email');
                     if (contactName && contactEmail) {
@@ -317,141 +295,106 @@
                 }
             }
             desktopDropdown.innerHTML = desktopLinks;
-            mobileNavLinks.innerHTML = mobileLinks;
+            mobileNav.innerHTML = mobileLinks;
         }
         
-        function logout() {
-            localStorage.removeItem('token'); 
-            window.location.href = 'index.html'; 
-        }
-
+        // --- REMOVED: logout() function ---
         
-        // --- Collection & Filtering Logic (Unchanged) ---
-        async function initializeApp() {
+        // --- === NEW FEATURED PRODUCT LOGIC === ---
+        async function loadFeaturedProducts() {
+            const productGrid = document.getElementById('product-grid');
             try {
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
-                const [productRes, categoryRes] = await Promise.all([
-                    fetch(`${API_URL}/api/products`),
-                    fetch(`${API_URL}/api/categories`)
+                // 1. Fetch all categories and products
+                const [categoryRes, productRes] = await Promise.all([
+                    fetch(`${API_URL}/api/categories`),
+                    fetch(`${API_URL}/api/products`)
                 ]);
-                // ===================================================================
-
-                if (!productRes.ok) throw new Error('Could not load products');
+                
                 if (!categoryRes.ok) throw new Error('Could not load categories');
+                if (!productRes.ok) throw new Error('Could not load products');
 
-                allProducts = await productRes.json();
-                allCategories = await categoryRes.json();
+                const allCategories = await categoryRes.json();
+                const allProducts = await productRes.json();
 
-                const defaultParent = 'Men';
-                filterByParent(defaultParent, document.querySelector('#parent-category-nav a')); 
+                // 2. Create a lookup map for categoryId -> parentCategory
+                const categoryParentMap = new Map(allCategories.map(cat => [cat._id, cat.parentCategory]));
+                
+                // 3. Sort all products into parent category buckets
+                const menProducts = [];
+                const womenProducts = [];
+                const kidsProducts = [];
+
+                allProducts.forEach(product => {
+                    // Check if product has a category and category._id
+                    const parent = categoryParentMap.get(product.category?._id);
+                    if (parent === 'Men') {
+                        menProducts.push(product);
+                    } else if (parent === 'Women') {
+                        womenProducts.push(product);
+                    } else if (parent === 'Kids') {
+                        kidsProducts.push(product);
+                    }
+                });
+
+                // 4. Get one random product from each bucket
+                const featuredProducts = [];
+                
+                if (menProducts.length > 0) {
+                    featuredProducts.push(menProducts[Math.floor(Math.random() * menProducts.length)]);
+                }
+                if (womenProducts.length > 0) {
+                    featuredProducts.push(womenProducts[Math.floor(Math.random() * womenProducts.length)]);
+                }
+                if (kidsProducts.length > 0) {
+                    featuredProducts.push(kidsProducts[Math.floor(Math.random() * kidsProducts.length)]);
+                }
+
+                // 5. Render the featured products
+                if (featuredProducts.length === 0) {
+                    productGrid.innerHTML = '<p class="col-span-3 text-gray-500">No featured products available.</p>';
+                    return;
+                }
+
+                productGrid.innerHTML = ''; // Clear "Loading..."
+                featuredProducts.forEach(product => {
+                    productGrid.appendChild(createProductCard(product));
+                });
 
             } catch (error) {
-                console.error('Initialization error:', error);
-                document.getElementById('product-grid').innerHTML = '<p class="col-span-3 text-red-500 text-center">Failed to load collection. Please ensure the backend server is running and `productRoutes.js` is fixed.</p>';
+                console.error('Featured product error:', error);
+                productGrid.innerHTML = '<p class="col-span-3 text-red-500 text-center">Failed to load featured products.</p>';
             }
         }
 
-        function filterByParent(parentCategory, clickedLink) {
-            document.querySelectorAll('.parent-nav-link').forEach(link => link.classList.remove('active'));
-            if(clickedLink) {
-                clickedLink.classList.add('active');
-            }
-
-            const productCategoryIds = new Set(allProducts.map(p => p.category ? p.category._id : null));
-            const activeSubCategories = allCategories.filter(cat => cat.parentCategory === parentCategory && productCategoryIds.has(cat._id));
+        // --- FIXED: Re-usable function to create a product card with pinkish theme ---
+        function createProductCard(product) {
+            const productCard = document.createElement('div');
+            // This is your original pinkish gradient style
+            productCard.className = 'bg-gradient-to-b from-white to-pink-50 rounded-lg overflow-hidden shadow-lg border border-pink-100 flex flex-col transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 group';
             
-            displayCategoryButtons(activeSubCategories);
-
-            const firstActiveSubCategory = activeSubCategories.length > 0 ? activeSubCategories[0] : null;
-
-            let productsToShow = [];
-            let emptyMessage = `No products found for ${parentCategory}.`;
-
-            if (firstActiveSubCategory) {
-                productsToShow = allProducts.filter(prod => prod.category && prod.category._id === firstActiveSubCategory._id);
-                emptyMessage = 'No products found in this category.'; 
-            }
+            const imageUrl = product.images && product.images.length > 0 
+                ? product.images[0] 
+                : 'https://placehold.co/600x600/e2e8f0/64748b?text=No+Image';
             
-            displayProducts(productsToShow, emptyMessage);
+            const description = product.description ? product.description.substring(0, 100) + '...' : 'No description available.';
 
-            const firstButton = document.querySelector('.category-btn');
-            if (firstButton) {
-                firstButton.classList.add('active');
-            }
-        }
-
-        function filterProducts(subCategoryId, clickedButton) {
-            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-            if(clickedButton) {
-                clickedButton.classList.add('active');
-            }
-
-            const productsToShow = allProducts.filter(prod => prod.category && prod.category._id === subCategoryId);
-            
-            displayProducts(productsToShow, 'No products found in this category.');
-        }
-
-        function displayCategoryButtons(categories) {
-            const categoryBar = document.getElementById('category-bar');
-            categoryBar.innerHTML = ''; 
-            
-            if (categories.length === 0) {
-                 categoryBar.innerHTML = '<p class="text-gray-500">No sub-categories found.</p>';
-                 return;
-            }
-
-            categories.forEach((category) => {
-                const button = document.createElement('button');
-                button.className = 'category-btn';
-                button.textContent = category.name;
-                button.setAttribute('data-category-id', category._id);
-                button.onclick = () => filterProducts(category._id, button); // Pass 'this'
-                categoryBar.appendChild(button);
-            });
-        }
-
-        function displayProducts(products, emptyMessage) {
-            const productGrid = document.getElementById('product-grid');
-            productGrid.innerHTML = ''; 
-
-            if (products.length === 0) {
-                 productGrid.innerHTML = `<p class="col-span-3 text-gray-500">${emptyMessage}</p>`;
-                 return;
-            }
-
-            products.forEach(product => {
-                if (typeof product.category !== 'object' || product.category === null) {
-                    console.error('FATAL ERROR: productRoutes.js is not populating categories.');
-                    productGrid.innerHTML = '<p class="col-span-3 text-red-500 text-center">Fatal Error: Backend is not sending correct category data. Please restart server.</p>';
-                    return; 
-                }
-                
-                const productCard = document.createElement('div');
-                productCard.className = 'bg-gradient-to-b from-white to-pink-50 rounded-lg overflow-hidden shadow-lg border border-pink-100 flex flex-col transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 group';
-                
-                const imageUrl = product.images && product.images.length > 0 
-                    ? product.images[0] 
-                    : 'https://placehold.co/600x600/e2e8f0/64748b?text=No+Image';
-                
-                const description = product.description ? product.description.substring(0, 100) + '...' : 'No description available.';
-
-                productCard.innerHTML = `
-                    <a href="product.html?id=${product._id}" class="block overflow-hidden">
-                        <img src="${imageUrl}" alt="${product.name}" class="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105">
-                    </a>
-                    <div class="p-6 flex flex-col flex-grow">
-                        <h3 class="text-xl font-semibold mb-2 text-gray-800">${product.name}</h3>
-                        <p class="text-gray-600 text-sm mb-4 flex-grow">${description}</p>
-                        <div class="mt-auto flex justify-between items-center">
-                            <span class="text-lg font-bold text-pink-600">₹${product.price.toFixed(2)}</span>
-                            <button onclick="window.location.href='product.html?id=${product._id}'" class="bg-pink-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-pink-700 transition duration-300">
-                                View Details
-                            </button>
-                        </div>
+            // This is your original card HTML structure
+            productCard.innerHTML = `
+                <a href="product.html?id=${product._id}" class="block overflow-hidden">
+                    <img src="${imageUrl}" alt="${product.name}" class="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105">
+                </a>
+                <div class="p-6 flex flex-col flex-grow">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-800">${product.name}</h3>
+                    <p class="text-gray-600 text-sm mb-4 flex-grow">${description}</p>
+                    <div class="mt-auto flex justify-between items-center">
+                        <span class="text-lg font-bold text-pink-600">₹${product.price.toFixed(2)}</span>
+                        <a href="product.html?id=${product._id}" class="bg-pink-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-pink-700 transition duration-300">
+                            View Details
+                        </a>
                     </div>
-                `;
-                productGrid.appendChild(productCard);
-            });
+                </div>
+            `;
+            return productCard;
         }
     </script>
     <script src="//code.tidio.co/dfexxakczw7qvenssz4ma5d28igwxnrq.js" async></script>

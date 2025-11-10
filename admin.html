@@ -139,8 +139,8 @@
         .variant-table th { background-color: #fce7f3; /* pink-100 */ font-size: 0.75rem; padding: 8px; }
         .variant-table td { font-size: 0.875rem; padding: 8px; }
         .variant-color-swatch {
-            width: 1.25rem;
-            height: 1.25rem;
+            width: 1.25rem; /* 20px */
+            height: 1.25rem; /* 20px */
             border-radius: 50%;
             border: 1px solid #d1d5db;
             display: inline-block;
@@ -170,15 +170,18 @@
 
     <header class="bg-[#831843] text-white shadow-md">
         <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="index.html" class="text-xl sm:text-2xl font-bold">Vardhan Wears (Admin Panel)</a> <div class="flex items-center space-x-4">
-                <a href="index.html" class="hidden sm:block text-pink-100 hover:text-white font-medium">Home</a> <div class="relative">
+            <a href="index.html" class="text-xl sm:text-2xl font-bold">Vardhan Wears (Admin Panel)</a> 
+            <div class="flex items-center space-x-4">
+                <a href="index.html" class="hidden sm:block text-pink-100 hover:text-white font-medium">Home</a> 
+                <div class="relative">
                     <button id="menu-btn" class="text-pink-100 hover:text-white focus:outline-none">
                         <i class="fas fa-bars text-2xl"></i>
                     </button>
                     <div id="mobile-menu" class="hidden absolute top-full right-0 mt-2 w-56 bg-white shadow-lg z-20 rounded-md ring-1 ring-black ring-opacity-5">
-                        <a href="index.html#collection" class="flex items-center gap-3 px-4 py-3 text-gray-700 font-medium hover:bg-pink-50 rounded-t-md">
+                        
+                        <a href="shop.html" class="flex items-center gap-3 px-4 py-3 text-gray-700 font-medium hover:bg-pink-50 rounded-t-md">
                             <i class="fas fa-shopping-bag w-5 text-center text-gray-400"></i>
-                            <span>Products</span>
+                            <span>Shop</span>
                         </a>
                         <a href="index.html#about" class="flex items-center gap-3 px-4 py-3 text-gray-700 font-medium hover:bg-pink-50">
                             <i class="fas fa-info-circle w-5 text-center text-gray-400"></i>
@@ -193,7 +196,7 @@
                             <span>My Profile</span>
                         </a>
                     </div>
-                </div>
+                    </div>
             </div>
         </nav>
     </header>
@@ -255,8 +258,27 @@
                     <div id="products-tab-content" class="tab-content">
                         <section id="manage-products" class="p-6">
                             <h2 class="text-2xl font-bold mb-4">Manage Existing Products</h2>
-                            <div id="product-list-container" class="overflow-x-auto">
+                            
+                            <div class="my-4 p-4 bg-pink-50 border border-pink-100 rounded-lg flex flex-col md:flex-row gap-4 items-center">
+                                <div class="flex-1 w-full">
+                                    <label for="product-filter-parent" class="block text-sm font-medium text-gray-700">Filter by Parent Category</label>
+                                    <select id="product-filter-parent" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:border-pink-500 focus:ring-pink-500">
+                                        <option value="">All Parent Categories</option>
+                                        </select>
+                                </div>
+                                <div class="flex-1 w-full">
+                                    <label for="product-filter-sub" class="block text-sm font-medium text-gray-700">Filter by Sub-category</label>
+                                    <select id="product-filter-sub" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:border-pink-500 focus:ring-pink-500" disabled>
+                                        <option value="">All Sub-categories</option>
+                                        </select>
+                                </div>
+                                <div class="flex-shrink-0 pt-5 space-x-2">
+                                    <button type="button" id="product-filter-apply" class="btn-primary-sm">Apply</button>
+                                    <button type="button" id="product-filter-reset" class="bg-gray-500 text-white font-bold py-2 px-4 rounded-md hover:bg-gray-600 text-sm">Reset</button>
+                                </div>
                             </div>
+                            <div id="product-list-container" class="overflow-x-auto">
+                                </div>
                         </section>
                     </div>
 
@@ -535,10 +557,12 @@
         variantColorPalette, variantColorNameInput, menuBtn, mobileMenu,
         createVariantsContainer, createVariantsPlaceholder,
         editVariantsContainer, editVariantsPlaceholder,
-        orderFilterSelect, searchInput, searchButton;
+        orderFilterSelect, searchInput, searchButton,
+        productFilterParent, productFilterSub, productFilterApply, productFilterReset; // <-- NEW FILTER VARS
 
     const token = localStorage.getItem('token');
     let allOrders = []; 
+    let allCategories = []; // <-- NEW: Store categories for filters
     let currentCreateVariants = [];
     let currentEditVariants = [];
     let currentVariantEditIndex = null; 
@@ -596,6 +620,12 @@
         searchInput = document.getElementById('search-input');
         searchButton = document.getElementById('search-button');
 
+        // === NEW: Assign filter elements ===
+        productFilterParent = document.getElementById('product-filter-parent');
+        productFilterSub = document.getElementById('product-filter-sub');
+        productFilterApply = document.getElementById('product-filter-apply');
+        productFilterReset = document.getElementById('product-filter-reset');
+
         
         // **All event listeners are now safely added here**
         
@@ -627,6 +657,11 @@
         orderFilterSelect.addEventListener('change', filterOrders);
         searchInput.addEventListener('input', filterOrders); 
         searchButton.addEventListener('click', filterOrders); 
+
+        // === NEW: Add listeners for product filtering ===
+        productFilterParent.addEventListener('change', populateProductSubFilters);
+        productFilterApply.addEventListener('click', fetchProducts); // Re-use fetchProducts to apply filter
+        productFilterReset.addEventListener('click', resetProductFilters);
         
         // --- Start Authentication and Data Loading ---
         if (!token) {
@@ -645,6 +680,9 @@
                 
                 await Promise.all([ loadCategories(), fetchProducts(), loadAllOrders() ]);
                 
+                // === NEW: Populate filters *after* categories are loaded ===
+                populateProductFilters();
+
                 adminLoader.style.display = 'none';
                 adminContent.classList.remove('hidden');
                 
@@ -667,9 +705,12 @@
             // ===================================================================
             if (!res.ok) throw new Error('Failed to fetch categories');
             const categories = await res.json();
+            allCategories = categories; // <-- NEW: Store categories globally
+            
             categoryList.innerHTML = '';
             createCategorySelect.innerHTML = '<option value="">-- Select a Category --</option>';
             editCategorySelect.innerHTML = '<option value="">-- Select a Category --</option>';
+            
             if (categories.length === 0) {
                  categoryList.innerHTML = '<p class="text-gray-500">No categories created yet.</p>';
             }
@@ -688,6 +729,7 @@
                     </button>
                 `;
                 categoryList.appendChild(categoryDiv);
+                
                 const option = document.createElement('option');
                 option.value = category._id;
                 option.textContent = `${category.name}${parentText ? ` (${parentText})` : ''}`;
@@ -719,6 +761,7 @@
                 parentInput.value = 'None'; 
                 showMessage('Category created!', 'success');
                 await loadCategories(); 
+                populateProductFilters(); // <-- NEW: Refresh filters
             } else {
                 showMessage((await res.json()).message, 'error');
             }
@@ -738,6 +781,7 @@
             if (res.ok) {
                 showMessage(`Category "${displayName}" deleted!`, 'success');
                 await loadCategories();
+                populateProductFilters(); // <-- NEW: Refresh filters
                 await fetchProducts(); 
             } else {
                 showMessage((await res.json()).message || 'Error deleting category', 'error');
@@ -747,11 +791,32 @@
         }
     }
 
-    // === 5. FETCH AND DISPLAY ALL PRODUCTS ===
+    // === 5. FETCH AND DISPLAY ALL PRODUCTS (MODIFIED FOR FILTERS) ===
     async function fetchProducts() {
         try {
+            // === NEW: Read filter values ===
+            const parentCategory = productFilterParent.value;
+            const subCategoryName = productFilterSub.value;
+            
+            const params = new URLSearchParams();
+            
+            // =================== THE FIX ===================
+            // The backend API expects 'category' for the parent, not 'parentCategory'.
+            if (parentCategory) {
+                params.append('category', parentCategory); // <-- CORRECTED PARAM NAME
+            }
+            // =================== END FIX ===================
+
+            if (subCategoryName) {
+                // Send the subcategory *name*, just like shop.js
+                params.append('subcategory', subCategoryName); 
+            }
+            
+            const queryString = params.toString();
+            const fetchUrl = `${API_URL}/api/products${queryString ? `?${queryString}` : ''}`;
+            
             // =================== DEPLOYMENT FIX: Use API_URL ===================
-            const res = await fetch(`${API_URL}/api/products`); 
+            const res = await fetch(fetchUrl); 
             // ===================================================================
             if (!res.ok) throw new Error('Failed to fetch products');
             const products = await res.json();
@@ -812,7 +877,7 @@
         } catch (error) {
             console.error('Failed to fetch products:', error);
             productListContainer.innerHTML = `<p class="text-red-500">Failed to load products. ${error.message}.</p>`;
-            throw error; 
+            // Do not throw error, just show message
         }
     }
 
@@ -851,6 +916,8 @@
             if (!files[0]) {
                 // Use alert() as requested and exit the function.
                 alert('Please upload at least one image to create the product.');
+                createBtn.disabled = false; // <-- Re-enable button
+                createBtn.textContent = 'Create Product'; // <-- Reset button text
                 return; // Stop the function here
             }
             // =============================================================================
@@ -1314,6 +1381,42 @@
         const variantList = (mode === 'create') ? currentCreateVariants : currentEditVariants;
         variantList.splice(index, 1); 
         renderVariantsTable(mode);
+    }
+
+    // === NEW: Product Filter Functions ===
+
+    function populateProductFilters() {
+        const parentCategories = [...new Set(allCategories.map(c => c.parentCategory).filter(p => p && p !== 'None'))];
+        productFilterParent.innerHTML = '<option value="">All Parent Categories</option>';
+        parentCategories.sort().forEach(p => {
+            productFilterParent.innerHTML += `<option value="${p}">${p}</option>`;
+        });
+        populateProductSubFilters(); // Call to set initial state (disabled)
+    }
+
+    function populateProductSubFilters() {
+        const selectedParent = productFilterParent.value;
+        productFilterSub.innerHTML = '<option value="">All Sub-categories</option>';
+
+        if (!selectedParent) {
+            productFilterSub.disabled = true;
+            return;
+        }
+
+        const subCategories = allCategories
+            .filter(c => c.parentCategory === selectedParent)
+            .map(c => c.name); // We filter by the name
+            
+        subCategories.sort().forEach(name => {
+            productFilterSub.innerHTML += `<option value="${name}">${name}</option>`;
+        });
+        productFilterSub.disabled = false;
+    }
+
+    function resetProductFilters() {
+        productFilterParent.value = "";
+        populateProductSubFilters(); // This will reset and disable the sub-filter
+        fetchProducts(); // Re-fetch all products
     }
 
 </script>

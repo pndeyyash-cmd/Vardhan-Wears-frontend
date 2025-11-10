@@ -45,6 +45,46 @@
             opacity: 0.3;
             cursor: not-allowed;
         }
+        
+        /* === FIXED: Image Modal Styles === */
+        #image-modal-backdrop {
+            display: none; /* <-- THIS WAS THE BUG. Changed from 'flex' to 'none' */
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.75);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        #image-modal-content {
+            position: relative;
+            max-width: 90vw;
+            max-height: 90vh;
+        }
+        #image-modal-content img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            max-width: 90vw;
+            max-height: 90vh;
+        }
+        #image-modal-close {
+            position: absolute;
+            top: -0.5rem;
+            right: -0.5rem;
+            font-size: 2.5rem;
+            color: white;
+            cursor: pointer;
+            line-height: 1;
+            background-color: rgba(0,0,0,0.5);
+            border-radius: 99px;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
     <link rel="manifest" href="/manifest.json">
 </head>
@@ -66,7 +106,8 @@
                         <i class="fas fa-bars"></i>
                     </button>
                     <div id="desktop-menu-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
-                        </div>
+                            <!-- Content is injected by checkAuth() -->
+                    </div>
                 </div>
 
                 <div class="md:hidden">
@@ -76,18 +117,21 @@
                 </div>
             </div>
             </nav>
+        <!-- Content is injected by checkAuth() -->
         <div id="mobile-nav-links" class="md:hidden hidden bg-white">
-             </div>
+        </div>
     </header>
     
     <main class="container mx-auto px-4 sm:px-6 lg:px-8 mt-8 pb-16">
         <div class="bg-gradient-to-b from-white to-pink-50 rounded-lg shadow-lg overflow-hidden border border-pink-100">
             <div class="md:grid md:grid-cols-2">
                 <div class="p-4 sm:p-6">
-                    <div class="aspect-w-1 aspect-h-1">
+                    <!-- === IMAGE FIX: Removed aspect-ratio, added max-height and click === -->
+                    <div class="w-full">
                         <img id="main-image" src="https://placehold.co/600x600/e2e8f0/64748b?text=Loading..." 
                              alt="Product Image" 
-                             class="w-full h-full object-cover rounded-lg">
+                             class="w-full h-full max-h-[500px] object-contain rounded-lg cursor-pointer"
+                             onclick="openImageModal(this.src)"> <!-- Pass src to modal -->
                     </div>
                     <div id="thumbnail-gallery" class="flex space-x-2 mt-4 overflow-x-auto">
                         <div class="w-20 h-20 rounded-md bg-gray-200 animate-pulse"></div>
@@ -156,6 +200,14 @@
         <p id="message-text" class="font-medium">Item added to cart!</p>
     </div>
 
+    <!-- === NEW: Image Modal HTML === -->
+    <div id="image-modal-backdrop" onclick="closeImageModal()">
+        <div id="image-modal-content" onclick="event.stopPropagation()"> <!-- Prevents modal from closing when clicking image -->
+            <span id="image-modal-close" onclick="closeImageModal()">&times;</span>
+            <img id="modal-image" src="" alt="Full product view">
+        </div>
+    </div>
+
     <script>
         // =================== DEPLOYMENT FIX: Add API_URL ===================
         const API_URL = 'https://vardhan-wears-api.onrender.com';
@@ -170,8 +222,12 @@
         let currentVariant = null; 
         // V3.1 State
         let token = localStorage.getItem('token'); // Check for token on load
+        
+        // --- NEW: Modal Elements ---
+        let imageModalBackdrop = null;
+        let modalImage = null;
 
-        // --- Menu Toggles (Unchanged) ---
+        // --- Menu Toggles ---
         const menuBtn = document.getElementById('menu-btn');
         const mobileNavLinks = document.getElementById('mobile-nav-links'); 
         menuBtn.addEventListener('click', () => {
@@ -193,24 +249,28 @@
             }
         }
 
-        // --- Auth Logic (Unchanged) ---
+        // --- Auth Logic ---
         async function checkAuth() {
             // Re-check token in case it changed
             token = localStorage.getItem('token'); 
             const desktopDropdown = document.getElementById('desktop-menu-dropdown');
+            const mobileNav = document.getElementById('mobile-nav-links'); // Get mobile nav
+            
             let desktopLinks = '';
             let mobileLinks = '';
             
+            // --- === CHANGED: Desktop links now point to "Shop" === ---
             desktopLinks = `
-                <a href="index.html#collection" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Products</a>
+                <a href="shop.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Shop</a>
                 <a href="index.html#about" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">About</a>
                 <a href="index.html#contact" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Contact</a>
                 <hr class="my-1 border-gray-100">
             `;
             
+            // --- === CHANGED: Mobile links removed parent categories === ---
             mobileLinks = `
-                <a href="index.html#home" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Home</a>
-                <a href="index.html#collection" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Products</a>
+                <a href="index.html" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Home</a>
+                <a href="shop.html" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Shop</a>
                 <a href="index.html#about" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">About</a>
                 <a href="index.html#contact" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Contact</a>
                 <hr class="my-1 border-gray-100">
@@ -227,11 +287,9 @@
                 `;
             } else {
                 try {
-                    // =================== DEPLOYMENT FIX: Use API_URL ===================
                     const res = await fetch(`${API_URL}/api/auth/me`, { 
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    // ===================================================================
                     if (!res.ok) {
                         localStorage.removeItem('token');
                         token = null; // Clear token state
@@ -240,18 +298,21 @@
                     }
                     const user = await res.json();
                     
+                    // --- === REMOVED LOGOUT BUTTON === ---
                     desktopLinks += `
-                            <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-blue-600 font-medium hover:bg-gray-100">
-                                <i class="fas fa-user-circle w-5 mr-2"></i> My Profile
-                            </a>
-                            ${user.isAdmin ? '<a href="admin.html" class="block px-4 py-2 text-sm text-yellow-600 font-bold hover:bg-gray-100">Admin Panel</a>' : ''}
+                        <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-blue-600 font-medium hover:bg-gray-100">
+                            <i class="fas fa-user-circle w-5 mr-2"></i> My Profile
+                        </a>
+                        ${user.isAdmin ? '<a href="admin.html" class="block px-4 py-2 text-sm text-yellow-600 font-bold hover:bg-gray-100">Admin Panel</a>' : ''}
                     `;
                     mobileLinks += `
-                            <a href="profile.html" class="flex items-center block py-2 px-6 text-sm text-blue-600 font-medium hover:bg-gray-100">
-                                <i class="fas fa-user-circle w-5 mr-2"></i> My Profile
-                            </a>
-                            ${user.isAdmin ? '<a href="admin.html" class="block py-2 px-6 text-sm text-yellow-600 font-bold hover:bg-gray-100">Admin Panel</a>' : ''}
+                        <a href="profile.html" class="flex items-center block py-2 px-6 text-sm text-blue-600 font-medium hover:bg-gray-100">
+                            <i class="fas fa-user-circle w-5 mr-2"></i> My Profile
+                        </a>
+                        ${user.isAdmin ? '<a href="admin.html" class="block py-2 px-6 text-sm text-yellow-600 font-bold hover:bg-gray-100">Admin Panel</a>' : ''}
                     `;
+                    // --- === END OF REMOVAL === ---
+
                 } catch (error) {
                     console.error('Auth check failed:', error);
                     localStorage.removeItem('token');
@@ -259,9 +320,11 @@
                     checkAuth(); // Re-run auth
                 }
             }
-            document.getElementById('desktop-menu-dropdown').innerHTML = desktopLinks;
+            desktopDropdown.innerHTML = desktopLinks;
             mobileNavLinks.innerHTML = mobileLinks;
         }
+
+        // --- REMOVED: logout() function ---
 
         // --- Page Logic (V3.1 Refactor) ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -281,6 +344,10 @@
             // === PWA SERVICE WORKER REGISTRATION END ===
             // ===============================================
             
+            // --- NEW: Assign modal elements ---
+            imageModalBackdrop = document.getElementById('image-modal-backdrop');
+            modalImage = document.getElementById('modal-image');
+
             checkAuth();
             fetchProductData();
             setupEventListeners();
@@ -294,9 +361,7 @@
             }
 
             try {
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const response = await fetch(`${API_URL}/api/products/${productId}`);
-                // ===================================================================
                 if (!response.ok) {
                     throw new Error('Product not found');
                 }
@@ -318,8 +383,11 @@
             const mainImage = document.getElementById('main-image');
             if (product.images && product.images.length > 0) {
                 mainImage.src = product.images[0];
+                // --- NEW: Set onclick for modal ---
+                mainImage.setAttribute('onclick', `openImageModal('${product.images[0]}')`);
             } else {
                 mainImage.src = 'https://placehold.co/600x600/e2e8f0/64748b?text=No+Image';
+                mainImage.setAttribute('onclick', `openImageModal('https://placehold.co/600x600/e2e8f0/64748b?text=No+Image')`);
             }
 
             const thumbnailGallery = document.getElementById('thumbnail-gallery');
@@ -329,13 +397,17 @@
                     const img = document.createElement('img');
                     img.src = imgSrc;
                     img.alt = `Thumbnail ${index + 1}`;
+                    // --- NEW: Add onclick to thumbnails to open modal ---
                     img.className = 'w-20 h-20 rounded-md cursor-pointer border-2 hover:border-pink-500'; 
                     if (index === 0) {
                         img.classList.add('thumbnail-active', 'border-pink-500'); 
                     } else {
                         img.classList.add('border-transparent');
                     }
-                    img.onclick = () => changeImage(imgSrc, img);
+                    img.onclick = () => {
+                        changeImage(imgSrc, img);
+                        openImageModal(imgSrc); // Also open modal on thumbnail click
+                    };
                     thumbnailGallery.appendChild(img);
                 });
             }
@@ -384,12 +456,10 @@
                 colorContainer.innerHTML = '<span class="text-sm text-gray-500">Standard color</span>';
                 selectedColorName = 'Standard'; 
                 selectedColorHex = '#FFFFFF';
-                // --- NEW: Update color name display for the "Standard" case ---
                 const colorNameDisplay = document.getElementById('selected-color-name');
                 if (colorNameDisplay) {
                     colorNameDisplay.textContent = 'Standard';
                 }
-                // --- END NEW ---
             }
             
             // Auto-select the first *available* variant
@@ -425,15 +495,11 @@
             selectedColorName = selectedColorEl ? selectedColorEl.value : (currentProduct && currentProduct.variants.length > 0 ? null : 'Standard');
             selectedColorHex = selectedColorEl ? selectedColorEl.dataset.hex : '#FFFFFF';
 
-            // --- JAVASCRIPT CHANGE HERE ---
-            // Update the color name display text
             const colorNameDisplay = document.getElementById('selected-color-name');
             if (colorNameDisplay) {
-                // Capitalize the first letter
                 const capitalizedName = selectedColorName ? selectedColorName.charAt(0).toUpperCase() + selectedColorName.slice(1) : '';
                 colorNameDisplay.textContent = capitalizedName;
             }
-            // --- END JAVASCRIPT CHANGE ---
 
 
             // Update visual styles for selected options
@@ -455,30 +521,24 @@
         }
 
         function updateDynamicAvailability() {
-            // This function now correctly handles null selectedSize/Color
             const allAvailableSizes = new Set(currentProduct.variants.filter(v => v.stock > 0).map(v => v.size));
             const allAvailableColors = new Set(currentProduct.variants.filter(v => v.stock > 0).map(v => v.colorName));
 
-            // Get all available sizes for the *currently selected color*
             const availableSizesForColor = selectedColorName ? new Set(
                 currentProduct.variants
                     .filter(v => v.colorName === selectedColorName && v.stock > 0)
                     .map(v => v.size)
-            ) : allAvailableSizes; // If no color selected, all available sizes are valid
+            ) : allAvailableSizes; 
             
-            // Get all available colors for the *currently selected size*
             const availableColorsForSize = selectedSize ? new Set(
                 currentProduct.variants
                     .filter(v => v.size === selectedSize && v.stock > 0)
                     .map(v => v.colorName)
-            ) : allAvailableColors; // If no size selected, all available colors are valid
+            ) : allAvailableColors; 
 
-            // Disable/enable size buttons
             document.querySelectorAll('input[name="size"]').forEach(input => {
                 const sizeSpan = input.nextElementSibling;
                 const isSelected = input.checked;
-                // Disable if it's not selected AND not available for the current color
-                // OR if it's out of stock for *all* colors
                 if ((!isSelected && !availableSizesForColor.has(input.value)) || !allAvailableSizes.has(input.value)) {
                     sizeSpan.classList.add('disabled');
                 } else {
@@ -486,12 +546,9 @@
                 }
             });
             
-            // Disable/enable color swatches
             document.querySelectorAll('input[name="color"]').forEach(input => {
                 const colorSpan = input.nextElementSibling;
                 const isSelected = input.checked;
-                // Disable if it's not selected AND not available for the current size
-                // OR if it's out of stock for *all* sizes
                 if ((!isSelected && !availableColorsForSize.has(input.value)) || !allAvailableColors.has(input.value)) {
                     colorSpan.classList.add('disabled');
                 } else {
@@ -507,17 +564,14 @@
             const qtyMinusBtn = document.getElementById('qty-minus');
             const qtyInput = document.getElementById('qty-input');
 
-            // Find the selected variant
             currentVariant = currentProduct.variants.find(v => 
                 v.size === selectedSize && v.colorName === selectedColorName
             );
 
-            // Reset quantity to 1
             quantity = 1;
             qtyInput.value = 1;
 
             if (currentVariant && currentVariant.stock > 0) {
-                // Variant exists and is in stock
                 if (currentVariant.stock <= 3) {
                     stockDisplay.textContent = `Only ${currentVariant.stock} left! Order soon.`;
                     stockDisplay.className = 'mt-2 text-sm font-medium text-red-600';
@@ -527,11 +581,10 @@
                 }
                 addToCartBtn.disabled = false;
                 addToCartBtn.textContent = 'Add to Cart';
-                qtyMinusBtn.disabled = true; // Always disabled at qty 1
+                qtyMinusBtn.disabled = true; 
                 qtyPlusBtn.disabled = (quantity >= currentVariant.stock); 
 
             } else if (selectedSize && selectedColorName) {
-                // A specific, invalid/OOS variant is selected
                 stockDisplay.textContent = 'Out of Stock';
                 stockDisplay.className = 'mt-2 text-sm font-bold text-red-600';
                 addToCartBtn.disabled = true;
@@ -539,7 +592,6 @@
                 qtyPlusBtn.disabled = true;
                 qtyMinusBtn.disabled = true;
             } else {
-                // Not all options are selected yet
                 stockDisplay.textContent = 'Please select a size and color';
                 stockDisplay.className = 'mt-2 text-sm font-medium text-gray-500';
                 addToCartBtn.disabled = true;
@@ -580,8 +632,12 @@
             document.getElementById('add-to-cart-btn').addEventListener('click', smartAddToCart);
         }
         
+        // --- MODIFIED: changeImage now also updates the main image's modal click ---
         window.changeImage = function(newSrc, clickedThumbnail) {
-            document.getElementById('main-image').src = newSrc;
+            const mainImage = document.getElementById('main-image');
+            mainImage.src = newSrc;
+            mainImage.setAttribute('onclick', `openImageModal('${newSrc}')`); // Update modal link
+            
             document.querySelectorAll('.thumbnail-active').forEach(img => {
                 img.classList.remove('thumbnail-active', 'border-pink-500'); 
                 img.classList.add('border-transparent');
@@ -590,28 +646,37 @@
             clickedThumbnail.classList.remove('border-transparent');
         }
 
-        // --- V3.1 "Smart" Cart Logic (Unchanged from previous refactor) ---
+        // --- NEW: Image Modal Functions ---
+        function openImageModal(src) {
+            if (imageModalBackdrop && modalImage) {
+                modalImage.src = src;
+                imageModalBackdrop.style.display = 'flex';
+            }
+        }
 
+        function closeImageModal() {
+            if (imageModalBackdrop) {
+                imageModalBackdrop.style.display = 'none';
+            }
+        }
+        
+        // --- V3.1 "Smart" Cart Logic ---
         function smartAddToCart() {
             if (!currentProduct) return; 
 
-            // 1. Validation
             if (!selectedSize || !selectedColorName) {
                 showMessage('Please select a size and color.', 'error');
                 return;
             }
-
             if (!currentVariant || currentVariant.stock <= 0) {
                 showMessage('This item is out of stock.', 'error');
                 return;
             }
-
             if (quantity > currentVariant.stock) {
                 showMessage(`Only ${currentVariant.stock} in stock.`, 'error');
                 return;
             }
 
-            // 2. Create the V3.1 cart item object
             const cartItem = {
                 productId: currentProduct._id, 
                 name: currentProduct.name,
@@ -622,7 +687,6 @@
                 quantity: quantity
             };
 
-            // 3. Check auth state and dispatch
             if (token) {
                 handleLoggedInAddToCart(cartItem);
             } else {
@@ -636,7 +700,6 @@
             btn.textContent = 'Adding...';
 
             try {
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const res = await fetch(`${API_URL}/api/cart/add`, { 
                     method: 'POST',
                     headers: {
@@ -645,16 +708,12 @@
                     },
                     body: JSON.stringify(cartItem) 
                 });
-                // ===================================================================
-
                 if (!res.ok) {
                     const err = await res.json();
                     throw new Error(err.message || 'Error adding to cart');
                 }
-
                 showMessage('Item added to cart!', 'success');
                 updateVariantState(); 
-
             } catch (error) {
                 console.error('Logged-in Add to Cart error:', error);
                 showMessage(error.message, 'error');
@@ -691,10 +750,7 @@
                 updateVariantState();
             }
         }
-
-        // --- End of V3.1 Refactor ---
-
-
+        
         function showMessage(message, type = 'success') {
             const messageBox = document.getElementById('message-box');
             const messageText = document.getElementById('message-text');

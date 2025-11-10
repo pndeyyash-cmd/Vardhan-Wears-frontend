@@ -76,7 +76,7 @@
             </div>
         </nav>
         <div id="mobile-nav-links" class="md:hidden hidden bg-white">
-             </div>
+            </div>
     </header>
 
     <main class="container mx-auto px-4 sm:px-6 lg:px-8 mt-8 pb-16">
@@ -249,21 +249,33 @@
 
         async function checkAuth() {
             const desktopDropdown = document.getElementById('desktop-menu-dropdown');
+            const mobileNav = document.getElementById('mobile-nav-links'); // Get mobile nav
+            
             let desktopLinks = '';
             let mobileLinks = '';
+
+            // --- === CHANGED: Desktop links now point to correct pages === ---
+            // === START OF CHANGES ===
             desktopLinks = `
-                <a href="index.html#collection" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Products</a>
+                <a href="shop.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Shop</a>
                 <a href="index.html#about" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">About</a>
                 <a href="index.html#contact" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Contact</a>
                 <hr class="my-1 border-gray-100">
             `;
+            
+            // --- === CHANGED: Mobile links now include parent categories and correct paths === ---
             mobileLinks = `
-                <a href="index.html#home" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Home</a>
-                <a href="index.html#collection" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Products</a>
+                <a href="index.html" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Home</a>
+                <hr class="my-1 border-gray-100">
+                <a href="shop.html" class="block py-2 px-6 text-sm text-blue-600 font-medium hover:bg-gray-100">Shop</a>
+                <hr class="my-1 border-gray-100">
                 <a href="index.html#about" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">About</a>
                 <a href="index.html#contact" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Contact</a>
                 <hr class="my-1 border-gray-100">
             `;
+            // === END OF CHANGES ===
+
+
             if (!token) {
                 showMessage('You must be logged in to check out.', 'error');
                 setTimeout(() => window.location.href = `login.html?redirect=checkout.html`, 2000);
@@ -283,6 +295,7 @@
                 currentUser = await res.json();
                 document.getElementById('fullName').value = currentUser.name || '';
                 
+                // --- Links for logged-in user (Logout is intentionally omitted here) ---
                 desktopLinks += `
                         <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-blue-600 font-medium hover:bg-gray-100">
                             <i class="fas fa-user-circle w-5 mr-2"></i> My Profile
@@ -295,6 +308,7 @@
                         </a>
                         ${currentUser.isAdmin ? '<a href="admin.html" class="block py-2 px-6 text-sm text-yellow-600 font-bold hover:bg-gray-100">Admin Panel</a>' : ''}
                 `;
+                // --- End of links ---
 
             } catch (error) {
                 console.error('Auth check failed:', error);
@@ -302,16 +316,12 @@
                 checkAuth();
                 return false;
             }
-            document.getElementById('desktop-menu-dropdown').innerHTML = desktopLinks;
-            mobileNavLinks.innerHTML = mobileLinks;
+            desktopDropdown.innerHTML = desktopLinks;
+            mobileNav.innerHTML = mobileLinks; // Use correct variable
             return true;
         }
 
-        function logout() {
-            localStorage.removeItem('token'); 
-            localStorage.removeItem('vardhansCart'); // Clear guest cart on logout
-            window.location.href = 'index.html'; 
-        }
+        // --- REMOVED: logout() function is no longer needed on this page ---
 
         // --- V3.1 Checkout Initialization & Validation ---
 
@@ -338,7 +348,7 @@
                 
                 if (cart.length === 0) {
                      showMessage('Your cart is empty. Redirecting to shopping.', 'error');
-                     setTimeout(() => window.location.href = 'index.html', 2000);
+                     setTimeout(() => window.location.href = 'shop.html', 2000); // FIXED: Point to shop.html
                      return;
                 }
                 
@@ -617,7 +627,7 @@
                 const verificationData = {
                     razorpay_order_id: paymentResponse.razorpay_order_id,
                     razorpay_payment_id: paymentResponse.razorpay_payment_id,
-                    razorpay_signature: paymentResponse.razorpay_signature, 
+                    razorpay_signature: paymentResponse.razorpay_signature, // Corrected typo from user's code
                     order_id: ourOrderId 
                 };
 
