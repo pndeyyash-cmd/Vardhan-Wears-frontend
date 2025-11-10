@@ -611,8 +611,8 @@
 
         // Add listeners for all order filtering
         orderFilterSelect.addEventListener('change', filterOrders);
-        searchInput.addEventListener('input', filterOrders); // This keeps search-as-you-type
-        searchButton.addEventListener('click', filterOrders); // This adds click-to-search
+        searchInput.addEventListener('input', filterOrders); 
+        searchButton.addEventListener('click', filterOrders); 
         
         // --- Start Authentication and Data Loading ---
         if (!token) {
@@ -627,7 +627,7 @@
             if (meResponse.ok && userData.isAdmin) {
                 welcomeMessage.textContent = `Welcome, Admin ${userData.name}!`;
                 
-                populateVariantInputs(); // Populate size dropdown and color palette
+                populateVariantInputs(); 
                 
                 await Promise.all([ loadCategories(), fetchProducts(), loadAllOrders() ]);
                 
@@ -644,7 +644,6 @@
         }
     }); // ** END OF DOMContentLoaded **
     
-
     // --- 2. LOAD CATEGORIES ---
     async function loadCategories() {
         try {
@@ -772,11 +771,16 @@
                     ? ` (${product.category.parentCategory})` : '';
                 const categoryDisplay = product.category ? `${categoryName}${parentName}` : '<span class="text-red-500">N/A</span>';
                 
+                // =================== NEW FEATURE 1: Clickable Product Image ===================
                 productHtml += `
                     <tr data-id="${product._id}">
-                        <td><img src="${imageUrl}" alt="${product.name}" class="w-16 h-16 object-cover rounded"></td>
+                        <td>
+                            <a href="product.html?id=${product._id}" target="_blank" title="View product on site">
+                                <img src="${imageUrl}" alt="${product.name}" class="w-16 h-16 object-cover rounded hover:opacity-75 transition-opacity">
+                            </a>
+                        </td>
                         <td class="font-medium">${product.name}</td>
-                        <td>${categoryDisplay}</td>
+                <td>${categoryDisplay}</td>
                         <td>₹${product.price.toFixed(2)}</td>
                         <td>${totalStock}</td>
                         <td class="space-x-2">
@@ -820,16 +824,22 @@
         createBtn.disabled = true;
         createBtn.textContent = 'Saving...';
         try {
-            if (document.getElementById('create-category').value === "") throw new Error('Please select a category.');
-            if (currentCreateVariants.length === 0) throw new Error('Please add at least one product variant.');
-
+            // =================== NEW FEATURE 2: Validation Check ===================
+            // This check was already here, as requested.
             const files = [
                 document.getElementById('create-image-1').files[0],
                 document.getElementById('create-image-2').files[0],
                 document.getElementById('create-image-3').files[0]
             ];
-            if (!files[0]) throw new Error('Please select at least one image.');
-            
+            if (!files[0]) {
+                // The 'required' attribute on the input handles this, but this is a good JS fallback.
+                throw new Error('Please upload at least one image to create the product.');
+            }
+            // =================== END NEW FEATURE ===================
+
+            if (document.getElementById('create-category').value === "") throw new Error('Please select a category.');
+            if (currentCreateVariants.length === 0) throw new Error('Please add at least one product variant.');
+
             createBtn.textContent = 'Uploading Images...';
             const imageUrls = await uploadImages(files); 
             
@@ -929,7 +939,7 @@
             showMessage('Error parsing product data. Check for special characters.', 'error');
         }
     }
-    
+
     // --- 11. SUBMIT EDIT FORM ---
     async function handleEditFormSubmit(e) {
         e.preventDefault();
