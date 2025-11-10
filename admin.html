@@ -497,7 +497,17 @@
     const CLOUDINARY_CLOUD_NAME = "dbhtu0kzg";
     const CLOUDINARY_UPLOAD_PRESET = "vardhan_uploads";
     
-    const STANDARD_SIZES = ['One Size', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'];
+    // =================== KID'S SIZE FIX ===================
+    const STANDARD_SIZES = [
+        'One Size', 
+        'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL',
+        'Kids: 2-4Y (S)', 
+        'Kids: 5-7Y (M)', 
+        'Kids: 8-10Y (L)', 
+        'Kids: 11-13Y (XL)'
+    ];
+    // =================== END FIX ===================
+
     const PREDEFINED_COLORS = [
         { name: 'Standard', hex: '#FFFFFF' }, { name: 'Black', hex: '#000000' },
         { name: 'White', hex: '#FFFFFF' }, { name: 'Gray', hex: '#808080' },
@@ -771,7 +781,7 @@
                     ? ` (${product.category.parentCategory})` : '';
                 const categoryDisplay = product.category ? `${categoryName}${parentName}` : '<span class="text-red-500">N/A</span>';
                 
-                // =================== NEW FEATURE 1: Clickable Product Image ===================
+                // =================== USER REQUEST FIX 1: Clickable Product Image ===================
                 productHtml += `
                     <tr data-id="${product._id}">
                         <td>
@@ -824,8 +834,7 @@
         createBtn.disabled = true;
         createBtn.textContent = 'Saving...';
         try {
-            // =================== NEW FEATURE 2: Validation Check ===================
-            // This check was already here, as requested.
+            // =================== USER REQUEST 2: Validation (Already Existed) ===================
             const files = [
                 document.getElementById('create-image-1').files[0],
                 document.getElementById('create-image-2').files[0],
@@ -835,7 +844,7 @@
                 // The 'required' attribute on the input handles this, but this is a good JS fallback.
                 throw new Error('Please upload at least one image to create the product.');
             }
-            // =================== END NEW FEATURE ===================
+            // =================== END FIX ===================
 
             if (document.getElementById('create-category').value === "") throw new Error('Please select a category.');
             if (currentCreateVariants.length === 0) throw new Error('Please add at least one product variant.');
