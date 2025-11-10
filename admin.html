@@ -654,6 +654,7 @@
         }
     }); // ** END OF DOMContentLoaded **
     
+
     // --- 2. LOAD CATEGORIES ---
     async function loadCategories() {
         try {
@@ -834,7 +835,8 @@
         createBtn.disabled = true;
         createBtn.textContent = 'Saving...';
         try {
-            // =================== USER REQUEST 2: Validation (Already Existed) ===================
+            // =================== USER REQUEST 2: Validation Check ===================
+            // This check was already here, but we will add the new alert.
             const files = [
                 document.getElementById('create-image-1').files[0],
                 document.getElementById('create-image-2').files[0],
