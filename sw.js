@@ -1,5 +1,5 @@
-// BUMP THE VERSION! -> Changed from v11 to v12
-const CACHE_NAME = 'vardhan-wears-v12'; 
+// BUMP THE VERSION! -> Changed to v13 to reflect HTML changes in login/register/profile
+const CACHE_NAME = 'vardhan-wears-v13'; 
 const URLS_TO_CACHE = [
   '/',
   '/index.html',
@@ -12,17 +12,16 @@ const URLS_TO_CACHE = [
   '/manifest.json',
   '/images/icons/android-chrome-192x192.png',
   '/images/icons/android-chrome-512x512.png',
-  // ADD THE NEW APPLE ICON
   '/images/icons/apple-touch-icon.png' 
 ];
 
 // 1. Install the service worker
 self.addEventListener('install', (event) => {
-  console.log('Service Worker: Installing v12...'); // Update log to v12
+  console.log('Service Worker: Installing v13...'); // Update log to v13
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('Service Worker: Caching app shell v12'); // Update log to v12
+        console.log('Service Worker: Caching app shell v13'); // Update log to v13
         return cache.addAll(URLS_TO_CACHE);
       })
       .then(() => self.skipWaiting())
@@ -31,12 +30,12 @@ self.addEventListener('install', (event) => {
 
 // 2. Activate the service worker and clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker: Activating v12...'); // Update log to v12
+  console.log('Service Worker: Activating v13...'); // Update log to v13
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cache) => {
-          // This is crucial: It deletes v11 (and older) caches
+          // This is crucial: It deletes v12 (and older) caches
           if (cache !== CACHE_NAME) { 
             console.log('Service Worker: Clearing old cache');
             return caches.delete(cache); 
