@@ -170,7 +170,14 @@
 
     <header class="bg-[#831843] text-white shadow-md">
         <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="index.html" class="text-xl sm:text-2xl font-bold">Vardhan Wears (Admin Panel)</a> 
+            
+            <div class="flex items-center space-x-4">
+                <button onclick="history.back()" class="text-pink-100 hover:text-white p-1 focus:outline-none" aria-label="Go back">
+                    <i class="fas fa-arrow-left fa-lg"></i>
+                </button>
+                <a href="index.html" class="text-xl sm:text-2xl font-bold">Vardhan Wears (Admin Panel)</a> 
+            </div>
+
             <div class="flex items-center space-x-4">
                 <a href="index.html" class="hidden sm:block text-pink-100 hover:text-white font-medium">Home</a> 
                 <div class="relative">
@@ -268,13 +275,13 @@
                                     <label for="product-filter-parent" class="block text-sm font-medium text-gray-700">Filter by Parent Category</label>
                                     <select id="product-filter-parent" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:border-pink-500 focus:ring-pink-500">
                                         <option value="">All Parent Categories</option>
-                                        </select>
+                                    </select>
                                 </div>
                                 <div class="flex-1 w-full">
                                     <label for="product-filter-sub" class="block text-sm font-medium text-gray-700">Filter by Sub-category</label>
                                     <select id="product-filter-sub" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:border-pink-500 focus:ring-pink-500" disabled>
                                         <option value="">All Sub-categories</option>
-                                        </select>
+                                    </select>
                                 </div>
                                 <div class="flex-shrink-0 pt-5 space-x-2">
                                     <button type="button" id="product-filter-apply" class="btn-primary-sm">Apply</button>
@@ -283,7 +290,7 @@
                             </div>
 
                             <div id="product-list-container" class="overflow-x-auto">
-                                </div>
+                            </div>
                         </section>
                     </div>
 
@@ -727,8 +734,8 @@
                 const parentText = category.parentCategory && category.parentCategory !== 'None' ? category.parentCategory : '';
                 categoryDiv.innerHTML = `
                     <div class="flex flex-col">
-                       <span class="font-medium">${category.name}</span>
-                       <span class="text-xs text-gray-500">${parentText}</span>
+                        <span class="font-medium">${category.name}</span>
+                        <span class="text-xs text-gray-500">${parentText}</span>
                     </div>
                     <button type="button" class="btn btn-delete-category" 
                             onclick="deleteCategory('${category._id}', '${category.name}', '${category.parentCategory || 'None'}')">
