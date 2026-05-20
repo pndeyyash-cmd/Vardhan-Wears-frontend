@@ -15,7 +15,7 @@
 
     <style>
         body { font-family: 'Poppins', sans-serif; }
-        h1, h2, h3 { font-family: 'Playfair Display', serif; } /* Corrected font name */
+        h1, h2, h3 { font-family: 'Playfair Display', serif; }
         html { scroll-behavior: smooth; }
     </style>
     <link rel="manifest" href="/manifest.json">
@@ -75,7 +75,12 @@
                         </div>
                         <div class="mb-6">
                             <label for="password" class="block text-gray-700 font-medium mb-2">Password</label>
-                            <input type="password" id="password" name="password" rows="5" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" required>
+                            <div class="relative">
+                                <input type="password" id="password" name="password" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 pr-10" required>
+                                <button type="button" onclick="togglePasswordVisibility('password', 'toggle-eye-icon')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600 hover:text-pink-600 focus:outline-none">
+                                    <i id="toggle-eye-icon" class="fas fa-eye"></i>
+                                </button>
+                            </div>
                         </div>
                         <button type="submit" id="register-btn" class="w-full bg-pink-600 text-white font-bold py-3 px-6 rounded-md hover:bg-pink-700 transition duration-300 disabled:opacity-50">Register</button>
                     </form>
@@ -100,6 +105,21 @@
         const API_URL = 'https://vardhan-wears-api.onrender.com';
         // ===================================================================
 
+        // --- Password Visibility Toggle ---
+        function togglePasswordVisibility(inputId, iconId) {
+            const passwordInput = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
         // --- UI Element References ---
         const registerForm = document.getElementById('register-form');
         const registerBtn = document.getElementById('register-btn');
@@ -122,14 +142,10 @@
                 }
             }
         }
-        // Make sure it's globally accessible for the HTML
         window.toggleDesktopMenu = toggleDesktopMenu;
 
         // --- Auth & Initial Load ---
         document.addEventListener('DOMContentLoaded', () => {
-            // ===============================================
-            // === PWA SERVICE WORKER REGISTRATION START ===
-            // ===============================================
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('/sw.js')
                     .then((registration) => {
@@ -139,9 +155,6 @@
                         console.error('Service Worker registration failed:', error);
                     });
             }
-            // ===============================================
-            // === PWA SERVICE WORKER REGISTRATION END ===
-            // ===============================================
 
             checkAuth(); 
         });
@@ -149,13 +162,11 @@
         async function checkAuth() {
             const token = localStorage.getItem('token');
             const desktopDropdown = document.getElementById('desktop-menu-dropdown');
-            const mobileNav = document.getElementById('mobile-nav-links'); // Get mobile nav element
+            const mobileNav = document.getElementById('mobile-nav-links'); 
             
             let desktopLinks = '';
             let mobileLinks = '';
 
-            // --- === CHANGED: Desktop links now point to correct pages === ---
-            // === START OF CHANGES ===
             desktopLinks = `
                 <a href="shop.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Shop</a>
                 <a href="index.html#about" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">About</a>
@@ -163,7 +174,6 @@
                 <hr class="my-1 border-gray-100">
             `;
             
-            // --- === CHANGED: Mobile links now include parent categories and correct paths === ---
             mobileLinks = `
                 <a href="index.html" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Home</a>
                 <hr class="my-1 border-gray-100">
@@ -173,10 +183,8 @@
                 <a href="index.html#contact" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Contact</a>
                 <hr class="my-1 border-gray-100">
             `;
-            // === END OF CHANGES ===
 
             if (!token) {
-                // Not logged in, show "Login"
                 desktopLinks += `
                     <a href="login.html" class="block px-4 py-2 text-sm text-pink-600 font-bold hover:bg-pink-50">Login</a>
                 `;
@@ -184,36 +192,24 @@
                     <a href="login.html" class="block py-2 px-6 text-sm text-pink-600 font-bold hover:bg-pink-50">Login</a>
                 `;
             } else {
-                // === START OF CHANGES ===
-                // User is already logged in, redirect them away from the register page
                 try {
                     const res = await fetch(`${API_URL}/api/auth/me`, {
                          headers: { 'Authorization': `Bearer ${token}` }
                     });
                     if (res.ok) {
-                        // User is valid, redirect to profile
-                        window.location.href = 'profile.html';
+                        window.location.replace('profile.html'); // REPLACED href with replace
                     } else {
-                        // Token is invalid, remove it
                         localStorage.removeItem('token');
                     }
                 } catch (e) {
                     console.error('Auth check failed, clearing token', e);
                     localStorage.removeItem('token');
                 }
-                // === END OF CHANGES ===
             }
             desktopDropdown.innerHTML = desktopLinks;
-            mobileNav.innerHTML = mobileLinks; // Use the correct variable here
+            mobileNav.innerHTML = mobileLinks; 
         }
 
-        // --- Logout function (Not needed on this page, but good practice if auth logic changes) ---
-        // function logout() {
-        //     localStorage.removeItem('token'); 
-        //     window.location.href = 'index.html'; 
-        // }
-
-        // --- Original Form Script ---
         function showMessage(message, type = 'error') {
             messageContainer.innerHTML = '';
             const p = document.createElement('p');
@@ -225,27 +221,25 @@
         async function mergeGuestCart(token) {
             const guestCartJSON = localStorage.getItem('vardhansCart');
             if (!guestCartJSON) {
-                return; // No guest cart, nothing to do.
+                return; 
             }
             
             const guestCart = JSON.parse(guestCartJSON);
             if (!guestCart || guestCart.length === 0) {
-                localStorage.removeItem('vardhansCart'); // Clean up
+                localStorage.removeItem('vardhansCart'); 
                 return;
             }
 
             console.log('Guest cart found. Merging with database...');
             try {
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const res = await fetch(`${API_URL}/api/cart/merge`, { 
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}` // Use the new token
+                        'Authorization': `Bearer ${token}` 
                     },
-                    body: JSON.stringify({ guestCart: guestCart }) // Send the cart
+                    body: JSON.stringify({ guestCart: guestCart }) 
                 });
-                // ===================================================================
 
                 if (!res.ok) {
                     const err = await res.json();
@@ -257,7 +251,7 @@
 
             } catch (error) {
                 console.error('CRITICAL: Cart merge failed.', error);
-                localStorage.removeItem('vardhansCart'); // Still remove it to prevent re-attempts
+                localStorage.removeItem('vardhansCart'); 
                 showMessage('Account created, but could not merge your guest cart. Please check your cart.', 'error');
             }
         }
@@ -273,7 +267,6 @@
             const password = document.getElementById('password').value;
 
             try {
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const response = await fetch(`${API_URL}/api/auth/register`, { 
                     method: 'POST',
                     headers: {
@@ -285,23 +278,22 @@
                         password: password
                     })
                 });
-                // ===================================================================
 
                 const data = await response.json();
 
-                if (response.ok) { // Status 201
+                if (response.ok) { 
                     localStorage.setItem('token', data.token);
 
                     const guestCart = JSON.parse(localStorage.getItem('vardhansCart') || 'null');
                     if (guestCart && guestCart.length > 0) {
                         showMessage('Registration successful! Merging your cart...', 'success');
-                        await mergeGuestCart(data.token); // Pass in new token
+                        await mergeGuestCart(data.token); 
                     } else {
                         showMessage('Registration successful! Redirecting...', 'success');
                     }
                     
                     setTimeout(() => {
-                        window.location.href = 'index.html'; // Redirect to home
+                        window.location.replace('index.html'); // REPLACED href with replace
                     }, 1000); 
                     
                 } else {

@@ -94,8 +94,8 @@
         <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
             
             <div class="flex items-center space-x-4">
-                <button onclick="history.back()" class="text-gray-600 hover:text-gray-900 p-1 focus:outline-none" aria-label="Go back">
-                    <i class="fas fa-arrow-left fa-lg"></i>
+                <button onclick="history.back()" class="text-gray-600 hover:text-pink-600 focus:outline-none transition duration-300" aria-label="Go back">
+                    <i class="fas fa-arrow-left text-xl"></i>
                 </button>
                 <a href="index.html" class="text-2xl font-bold text-gray-800">Vardhan Wears</a>
             </div>
@@ -216,14 +216,14 @@
         // V3 State
         let selectedSize = null;
         let selectedColorName = null;
-        let selectedColorHex = null; // Still useful for UI
+        let selectedColorHex = null; 
         let quantity = 1;
         let currentProduct = null; 
         let currentVariant = null; 
-        // V3.1 State
-        let token = localStorage.getItem('token'); // Check for token on load
         
-        // --- NEW: Modal Elements ---
+        let token = localStorage.getItem('token'); 
+        
+        // --- Modal Elements ---
         let imageModalBackdrop = null;
         let modalImage = null;
 
@@ -237,7 +237,6 @@
         function toggleDesktopMenu() {
             document.getElementById('desktop-menu-dropdown').classList.toggle('hidden');
         }
-        // Make sure it's globally accessible
         window.toggleDesktopMenu = toggleDesktopMenu;
 
         window.onclick = function(event) {
@@ -251,15 +250,13 @@
 
         // --- Auth Logic ---
         async function checkAuth() {
-            // Re-check token in case it changed
             token = localStorage.getItem('token'); 
             const desktopDropdown = document.getElementById('desktop-menu-dropdown');
-            const mobileNav = document.getElementById('mobile-nav-links'); // Get mobile nav
+            const mobileNav = document.getElementById('mobile-nav-links'); 
             
             let desktopLinks = '';
             let mobileLinks = '';
             
-            // --- === CHANGED: Desktop links now point to "Shop" === ---
             desktopLinks = `
                 <a href="shop.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Shop</a>
                 <a href="index.html#about" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">About</a>
@@ -267,7 +264,6 @@
                 <hr class="my-1 border-gray-100">
             `;
             
-            // --- === CHANGED: Mobile links removed parent categories === ---
             mobileLinks = `
                 <a href="index.html" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Home</a>
                 <a href="shop.html" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Shop</a>
@@ -292,13 +288,12 @@
                     });
                     if (!res.ok) {
                         localStorage.removeItem('token');
-                        token = null; // Clear token state
-                        checkAuth(); // Re-run auth to render "Login"
+                        token = null; 
+                        checkAuth(); 
                         return;
                     }
                     const user = await res.json();
                     
-                    // --- === REMOVED LOGOUT BUTTON === ---
                     desktopLinks += `
                         <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-blue-600 font-medium hover:bg-gray-100">
                             <i class="fas fa-user-circle w-5 mr-2"></i> My Profile
@@ -311,26 +306,19 @@
                         </a>
                         ${user.isAdmin ? '<a href="admin.html" class="block py-2 px-6 text-sm text-yellow-600 font-bold hover:bg-gray-100">Admin Panel</a>' : ''}
                     `;
-                    // --- === END OF REMOVAL === ---
 
                 } catch (error) {
                     console.error('Auth check failed:', error);
                     localStorage.removeItem('token');
-                    token = null; // Clear token state
-                    checkAuth(); // Re-run auth
+                    token = null; 
+                    checkAuth(); 
                 }
             }
             desktopDropdown.innerHTML = desktopLinks;
             mobileNavLinks.innerHTML = mobileLinks;
         }
 
-        // --- REMOVED: logout() function ---
-
-        // --- Page Logic (V3.1 Refactor) ---
         document.addEventListener('DOMContentLoaded', () => {
-            // ===============================================
-            // === PWA SERVICE WORKER REGISTRATION START ===
-            // ===============================================
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('/sw.js')
                     .then((registration) => {
@@ -340,11 +328,7 @@
                         console.error('Service Worker registration failed:', error);
                     });
             }
-            // ===============================================
-            // === PWA SERVICE WORKER REGISTRATION END ===
-            // ===============================================
             
-            // --- NEW: Assign modal elements ---
             imageModalBackdrop = document.getElementById('image-modal-backdrop');
             modalImage = document.getElementById('modal-image');
 
@@ -383,7 +367,6 @@
             const mainImage = document.getElementById('main-image');
             if (product.images && product.images.length > 0) {
                 mainImage.src = product.images[0];
-                // --- NEW: Set onclick for modal ---
                 mainImage.setAttribute('onclick', `openImageModal('${product.images[0]}')`);
             } else {
                 mainImage.src = 'https://placehold.co/600x600/e2e8f0/64748b?text=No+Image';
@@ -397,7 +380,6 @@
                     const img = document.createElement('img');
                     img.src = imgSrc;
                     img.alt = `Thumbnail ${index + 1}`;
-                    // --- NEW: Add onclick to thumbnails to open modal ---
                     img.className = 'w-20 h-20 rounded-md cursor-pointer border-2 hover:border-pink-500'; 
                     if (index === 0) {
                         img.classList.add('thumbnail-active', 'border-pink-500'); 
@@ -406,7 +388,7 @@
                     }
                     img.onclick = () => {
                         changeImage(imgSrc, img);
-                        openImageModal(imgSrc); // Also open modal on thumbnail click
+                        openImageModal(imgSrc); 
                     };
                     thumbnailGallery.appendChild(img);
                 });
@@ -462,7 +444,6 @@
                 }
             }
             
-            // Auto-select the first *available* variant
             const firstAvailableVariant = product.variants.find(v => v.stock > 0);
             if (firstAvailableVariant) {
                 selectedSize = firstAvailableVariant.size;
@@ -475,7 +456,6 @@
                     document.querySelector(`input[name="color"][value="${selectedColorName}"]`).checked = true;
                 }
             } else {
-                // No items in stock, just select the first of each
                 if (uniqueSizes.length > 0 && document.querySelector('input[name="size"]')) {
                     document.querySelector('input[name="size"]').checked = true;
                 }
@@ -501,8 +481,6 @@
                 colorNameDisplay.textContent = capitalizedName;
             }
 
-
-            // Update visual styles for selected options
             document.querySelectorAll('.size-option').forEach(span => span.classList.remove('selected'));
             if (selectedSizeEl) {
                 selectedSizeEl.nextElementSibling.classList.add('selected');
@@ -513,10 +491,9 @@
                 selectedColorEl.nextElementSibling.classList.add('selected');
             }
 
-            // Update dynamic availability
-            if(currentProduct) { // Ensure product is loaded
+            if(currentProduct) { 
                 updateDynamicAvailability();
-                updateVariantState(); // Find the matching variant and update stock/buttons
+                updateVariantState(); 
             }
         }
 
@@ -632,11 +609,10 @@
             document.getElementById('add-to-cart-btn').addEventListener('click', smartAddToCart);
         }
         
-        // --- MODIFIED: changeImage now also updates the main image's modal click ---
         window.changeImage = function(newSrc, clickedThumbnail) {
             const mainImage = document.getElementById('main-image');
             mainImage.src = newSrc;
-            mainImage.setAttribute('onclick', `openImageModal('${newSrc}')`); // Update modal link
+            mainImage.setAttribute('onclick', `openImageModal('${newSrc}')`); 
             
             document.querySelectorAll('.thumbnail-active').forEach(img => {
                 img.classList.remove('thumbnail-active', 'border-pink-500'); 
@@ -646,7 +622,6 @@
             clickedThumbnail.classList.remove('border-transparent');
         }
 
-        // --- NEW: Image Modal Functions ---
         function openImageModal(src) {
             if (imageModalBackdrop && modalImage) {
                 modalImage.src = src;
@@ -660,7 +635,6 @@
             }
         }
         
-        // --- V3.1 "Smart" Cart Logic ---
         function smartAddToCart() {
             if (!currentProduct) return; 
 

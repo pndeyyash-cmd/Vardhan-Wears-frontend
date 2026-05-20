@@ -68,8 +68,14 @@
                             <label for="email" class="block text-gray-700 font-medium mb-2">Your Email</label>
                             <input type="email" id="email" name="email" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" required>
                         </div>
-                        <div class="mb-4"> <label for="password" class="block text-gray-700 font-medium mb-2">Password</label>
-                            <input type="password" id="password" name="password" rows="5" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" required>
+                        <div class="mb-4"> 
+                            <label for="password" class="block text-gray-700 font-medium mb-2">Password</label>
+                            <div class="relative">
+                                <input type="password" id="password" name="password" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 pr-10" required>
+                                <button type="button" onclick="togglePasswordVisibility('password', 'toggle-eye-icon')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600 hover:text-pink-600 focus:outline-none">
+                                    <i id="toggle-eye-icon" class="fas fa-eye"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="text-right mb-6">
                             <a href="forgot-password.html" class="text-sm text-pink-600 hover:underline">Forgot password?</a>
@@ -97,6 +103,21 @@
         const API_URL = 'https://vardhan-wears-api.onrender.com';
         // ===================================================================
 
+        // --- Password Visibility Toggle ---
+        function togglePasswordVisibility(inputId, iconId) {
+            const passwordInput = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
         // --- UI Element References ---
         const loginForm = document.getElementById('login-form');
         const loginBtn = document.getElementById('login-btn');
@@ -119,14 +140,10 @@
                 }
             }
         }
-        // Make sure it's globally accessible for the HTML
         window.toggleDesktopMenu = toggleDesktopMenu;
 
         // --- Auth & Initial Load ---
         document.addEventListener('DOMContentLoaded', () => {
-            // ===============================================
-            // === PWA SERVICE WORKER REGISTRATION START ===
-            // ===============================================
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('/sw.js')
                     .then((registration) => {
@@ -136,23 +153,17 @@
                         console.error('Service Worker registration failed:', error);
                     });
             }
-            // ===============================================
-            // === PWA SERVICE WORKER REGISTRATION END ===
-            // ===============================================
-            
             checkAuth(); 
         });
 
         async function checkAuth() {
             const token = localStorage.getItem('token');
             const desktopDropdown = document.getElementById('desktop-menu-dropdown');
-            const mobileNav = document.getElementById('mobile-nav-links'); // Get mobile nav element
+            const mobileNav = document.getElementById('mobile-nav-links'); 
             
             let desktopLinks = '';
             let mobileLinks = '';
 
-            // --- === CHANGED: Desktop links now point to correct pages === ---
-            // === START OF CHANGES ===
             desktopLinks = `
                 <a href="shop.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Shop</a>
                 <a href="index.html#about" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">About</a>
@@ -160,7 +171,6 @@
                 <hr class="my-1 border-gray-100">
             `;
             
-            // --- === CHANGED: Mobile links now include parent categories and correct paths === ---
             mobileLinks = `
                 <a href="index.html" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Home</a>
                 <hr class="my-1 border-gray-100">
@@ -170,11 +180,8 @@
                 <a href="index.html#contact" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Contact</a>
                 <hr class="my-1 border-gray-100">
             `;
-            // === END OF CHANGES ===
-
 
             if (!token) {
-                // Not logged in, show attractive "Register" button
                 desktopLinks += `
                     <a href="register.html" class="block px-4 py-2 text-sm text-pink-600 font-bold hover:bg-pink-50">Register</a>
                 `;
@@ -182,27 +189,22 @@
                     <a href="register.html" class="block py-2 px-6 text-sm text-pink-600 font-bold hover:bg-pink-50">Register</a>
                 `;
             } else {
-                // User is already logged in, redirect them away from the login page
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 try {
                     const res = await fetch(`${API_URL}/api/auth/me`, {
                          headers: { 'Authorization': `Bearer ${token}` }
                     });
                     if (res.ok) {
-                        // User is valid, redirect to profile
-                        window.location.href = 'profile.html';
+                        window.location.replace('profile.html'); // REPLACED href with replace
                     } else {
-                        // Token is invalid, remove it
                         localStorage.removeItem('token');
                     }
                 } catch (e) {
                     console.error('Auth check failed, clearing token', e);
                     localStorage.removeItem('token');
                 }
-                // ===================================================================
             }
             desktopDropdown.innerHTML = desktopLinks;
-            mobileNav.innerHTML = mobileLinks; // Use the correct variable
+            mobileNav.innerHTML = mobileLinks;
         }
 
         // --- Cart Merge Function ---
@@ -210,12 +212,11 @@
             const guestCart = JSON.parse(localStorage.getItem('vardhansCart')) || [];
             
             if (guestCart.length === 0) {
-                return; // No guest cart, nothing to merge
+                return; 
             }
 
             console.log('Guest cart found. Merging with user account...');
             try {
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const res = await fetch(`${API_URL}/api/cart/merge`, {
                     method: 'POST',
                     headers: {
@@ -224,7 +225,6 @@
                     },
                     body: JSON.stringify({ guestCart: guestCart })
                 });
-                // ===================================================================
 
                 if (!res.ok) {
                     throw new Error('Failed to merge cart. Items will be waiting for you in your guest cart.');
@@ -239,7 +239,6 @@
             }
         }
         
-        // --- Show Message Helper ---
         function showMessage(message, type = 'success') {
             messageContainer.innerHTML = `<p class="text-${type === 'error' ? 'red' : 'green'}-500">${message}</p>`;
         }
@@ -247,7 +246,7 @@
         // --- Login Form Submit Handler ---
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            showMessage(''); // Clear previous messages
+            showMessage('');
             loginBtn.disabled = true;
             loginBtn.textContent = 'Logging in...';
 
@@ -255,13 +254,11 @@
             const password = document.getElementById('password').value;
 
             try {
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const loginResponse = await fetch(`${API_URL}/api/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 });
-                // ===================================================================
 
                 const data = await loginResponse.json();
 
@@ -272,12 +269,10 @@
                 const token = data.token;
                 localStorage.setItem('token', token);
                 
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const meResponse = await fetch(`${API_URL}/api/auth/me`, {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                // ===================================================================
                 
                 const userData = await meResponse.json();
                 if (!meResponse.ok) {
@@ -287,7 +282,7 @@
                 if (userData.isAdmin) {
                     showMessage('Admin login successful! Redirecting...', 'success');
                     setTimeout(() => {
-                        window.location.href = 'admin.html'; 
+                        window.location.replace('admin.html'); // REPLACED href with replace
                     }, 1000);
                 } else {
                     showMessage('Login successful! Merging cart...', 'success');
@@ -299,9 +294,9 @@
                     setTimeout(() => {
                         const redirectUrl = new URLSearchParams(window.location.search).get('redirect');
                         if (redirectUrl) {
-                            window.location.href = redirectUrl;
+                            window.location.replace(redirectUrl); // REPLACED href with replace
                         } else {
-                            window.location.href = 'profile.html';
+                            window.location.replace('profile.html'); // REPLACED href with replace
                         }
                     }, 1000);
                 }

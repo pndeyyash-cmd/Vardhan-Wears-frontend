@@ -50,10 +50,15 @@
 </head>
 <body class="bg-gray-50">
 
-    
     <header class="bg-white shadow-md sticky top-0 z-50">
         <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="index.html" class="text-2xl font-bold text-gray-800">Vardhan Wears</a>
+            
+            <div class="flex items-center space-x-4">
+                <button onclick="history.back()" class="text-gray-600 hover:text-pink-600 focus:outline-none transition duration-300" aria-label="Go back">
+                    <i class="fas fa-arrow-left text-xl"></i>
+                </button>
+                <a href="index.html" class="text-2xl font-bold text-gray-800">Vardhan Wears</a>
+            </div>
             
             <div class="flex items-center space-x-4">
                 <a href="cart.html" class="p-2 text-gray-600 hover:text-gray-900">
@@ -81,6 +86,7 @@
         <div id="mobile-nav-links" class="md:hidden hidden bg-white">
              </div>
     </header>
+    
     <main class="container mx-auto px-4 sm:px-6 lg:px-8 mt-8 pb-16">
         
         <a href="profile.html" class="inline-flex items-center text-pink-600 hover:text-pink-800 font-medium mb-4">
@@ -193,11 +199,8 @@
     </div>
 
     <script>
-        // =================== DEPLOYMENT FIX: Add API_URL ===================
         const API_URL = 'https://vardhan-wears-api.onrender.com';
-        // ===================================================================
 
-        // === Global Variables ===
         const CLOUDINARY_CLOUD_NAME = 'dbhtu0kzg'; 
         const CLOUDINARY_UPLOAD_PRESET = 'vardhan_uploads'; 
         let currentUser = null;
@@ -205,7 +208,6 @@
         const token = localStorage.getItem('token');
         const orderId = new URLSearchParams(window.location.search).get('id');
 
-        // --- Menu Toggles ---
         const menuBtn = document.getElementById('menu-btn');
         const mobileNavLinks = document.getElementById('mobile-nav-links'); 
         menuBtn.addEventListener('click', () => {
@@ -223,16 +225,13 @@
             }
         }
 
-        // --- Auth Logic ---
         async function checkAuth() {
             const desktopDropdown = document.getElementById('desktop-menu-dropdown');
-            const mobileNav = document.getElementById('mobile-nav-links'); // Get mobile nav
+            const mobileNav = document.getElementById('mobile-nav-links'); 
             
             let desktopLinks = '';
             let mobileLinks = '';
             
-            // --- === CHANGED: Desktop links now point to correct pages === ---
-            // === START OF CHANGES ===
             desktopLinks = `
                 <a href="shop.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Shop</a>
                 <a href="index.html#about" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">About</a>
@@ -240,7 +239,6 @@
                 <hr class="my-1 border-gray-100">
             `;
             
-            // --- === CHANGED: Mobile links now include parent categories and correct paths === ---
             mobileLinks = `
                 <a href="index.html" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Home</a>
                 <hr class="my-1 border-gray-100">
@@ -250,27 +248,23 @@
                 <a href="index.html#contact" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Contact</a>
                 <hr class="my-1 border-gray-100">
             `;
-            // === END OF CHANGES ===
 
             if (!token) {
-                window.location.href = 'login.html'; 
+                window.location.replace('login.html'); 
                 return false; 
             } 
             
             try {
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const res = await fetch(`${API_URL}/api/auth/me`, { 
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                // ===================================================================
                 if (!res.ok) {
                     localStorage.removeItem('token');
-                    window.location.href = 'login.html'; 
+                    window.location.replace('login.html'); 
                     return false; 
                 }
                 currentUser = await res.json(); 
                 
-                // Links for authenticated user (Logout omitted)
                 desktopLinks += `
                         <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-blue-600 font-medium hover:bg-gray-100">
                             <i class="fas fa-user-circle w-5 mr-2"></i> My Profile
@@ -285,22 +279,17 @@
                 `;
                 
                 desktopDropdown.innerHTML = desktopLinks;
-                mobileNav.innerHTML = mobileLinks; // Use correct variable
+                mobileNav.innerHTML = mobileLinks; 
                 return true; 
             } catch (error) {
                 console.error('Auth check failed:', error);
                 localStorage.removeItem('token');
-                window.location.href = 'login.html';
+                window.location.replace('login.html');
                 return false; 
             }
         }
-        
-        // --- Page Logic ---
 
         document.addEventListener('DOMContentLoaded', async () => {
-            // ===============================================
-            // === PWA SERVICE WORKER REGISTRATION START ===
-            // ===============================================
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('/sw.js')
                     .then((registration) => {
@@ -310,9 +299,6 @@
                         console.error('Service Worker registration failed:', error);
                     });
             }
-            // ===============================================
-            // === PWA SERVICE WORKER REGISTRATION END ===
-            // ===============================================
 
             const authed = await checkAuth();
             if (authed) {
@@ -326,7 +312,7 @@
             const errorContainer = document.getElementById('order-error');
 
             if (!orderId) {
-                window.location.href = 'profile.html';
+                window.location.replace('profile.html');
                 return;
             }
 
@@ -335,11 +321,9 @@
             errorContainer.classList.add('hidden');
 
             try {
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const res = await fetch(`${API_URL}/api/orders/${orderId}`, { 
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                // ===================================================================
 
                 if (!res.ok) {
                     const err = await res.json();
@@ -361,17 +345,14 @@
         }
 
         function renderOrderDetails(order) {
-            // 1. Top Bar
             document.getElementById('order-id-display').textContent = order._id;
             document.getElementById('order-date-display').textContent = new Date(order.createdAt).toLocaleString('en-IN', { dateStyle: 'long', timeStyle: 'short' });
 
-            // 2. Status Box
             const { statusText, statusSubtext, statusColor } = getOrderStatus(order);
             document.getElementById('order-status-display').textContent = statusText;
             document.getElementById('order-status-display').className = `text-2xl font-bold ${statusColor}`;
             document.getElementById('order-status-subtext').textContent = statusSubtext;
 
-            // 3. Shipping Address
             const shipping = order.shippingAddress;
             document.getElementById('shipping-address-container').innerHTML = `
                 <p class="font-semibold">${shipping.fullName}</p>
@@ -380,16 +361,13 @@
                 <p>Phone: ${shipping.countryCode} ${shipping.phone}</p>
             `;
 
-            // 4. Payment Details
             document.getElementById('payment-method-display').textContent = order.paymentDetails?.paymentMethod || 'N/A';
             document.getElementById('payment-id-display').textContent = order.paymentDetails?.razorpayPaymentId || 'N/A';
             
-            // 5. Order Summary
             document.getElementById('order-subtotal-display').textContent = `₹${order.totalPrice.toFixed(2)}`;
-            document.getElementById('order-shipping-display').textContent = `₹0.00`; // Shipping cost needs calculation if implemented
+            document.getElementById('order-shipping-display').textContent = `₹0.00`; 
             document.getElementById('order-total-display').textContent = `₹${order.totalPrice.toFixed(2)}`;
 
-            // 6. Order Items
             const itemsContainer = document.getElementById('order-items-container');
             itemsContainer.innerHTML = '';
             order.orderItems.forEach(item => {
@@ -411,9 +389,8 @@
                 `;
             });
 
-            // 7. Order Actions
             const actionsContainer = document.getElementById('order-actions-container');
-            actionsContainer.innerHTML = ''; // Clear
+            actionsContainer.innerHTML = ''; 
             if (!order.isPaid && !order.isCancelled) {
                 actionsContainer.innerHTML = `
                     <button class="text-sm font-medium bg-red-600 text-white py-3 px-5 rounded-lg hover:bg-red-700" onclick="handleCancel(event, '${order._id}')">
@@ -424,7 +401,7 @@
                     </button>
                 `;
             } else {
-                actionsContainer.classList.add('hidden'); // Hide the whole box if no actions
+                actionsContainer.classList.add('hidden'); 
             }
         }
 
@@ -477,20 +454,16 @@
             return { statusText, statusSubtext, statusColor };
         }
 
-        // --- Action Functions ---
-
         async function handleRepay(event, orderId) {
             event.preventDefault(); 
             const repayButton = event.target;
             repayButton.disabled = true;
             repayButton.textContent = 'Processing...';
             try {
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const res = await fetch(`${API_URL}/api/orders/${orderId}/repay`, { 
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                // ===================================================================
                 if (!res.ok) {
                     const err = await res.json();
                     throw new Error(err.message || 'Failed to create repayment order.');
@@ -531,18 +504,16 @@
                 return;
             }
             try {
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const res = await fetch(`${API_URL}/api/orders/${orderId}/cancel`, { 
                     method: 'PUT',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                // ===================================================================
                 if (!res.ok) {
                     const err = await res.json();
                     throw new Error(err.message || 'Failed to cancel order.');
                 }
                 showMessage('Order successfully cancelled.', 'success');
-                await loadOrderDetails(); // Refresh the page details
+                await loadOrderDetails(); 
             } catch (error) {
                 console.error('Error cancelling order:', error);
                 showMessage(error.message, 'error');
@@ -557,25 +528,22 @@
                     razorpay_signature: paymentResponse.razorpay_signature,
                     order_id: ourOrderId 
                 };
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const verifyRes = await fetch(`${API_URL}/api/orders/verify`, { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify(verificationData)
                 });
-                // ===================================================================
                 if (!verifyRes.ok) {
                     throw new Error('Payment verification failed.');
                 }
                 showMessage('Payment successful!', 'success');
-                await loadOrderDetails(); // Refresh the page details
+                await loadOrderDetails(); 
             } catch (error) {
                 console.error('Error verifying payment:', error);
                 showMessage(error.message, 'error');
             }
         }
 
-        // --- Message Box ---
         function showMessage(message, type = 'success') {
             const messageBox = document.getElementById('message-box');
             const messageText = document.getElementById('message-text');
@@ -593,7 +561,6 @@
             }, 3000);
         }
         
-        // --- Copy to Clipboard Function ---
         function copyToClipboard(text, message) {
             if (!navigator.clipboard) {
                 try {
@@ -617,7 +584,6 @@
             });
         }
 
-        // --- Make functions globally accessible ---
         window.toggleDesktopMenu = toggleDesktopMenu;
         window.handleRepay = handleRepay;
         window.handleCancel = handleCancel;

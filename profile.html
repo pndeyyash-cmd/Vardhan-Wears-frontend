@@ -73,7 +73,10 @@
     <header class="bg-white shadow-md sticky top-0 z-50">
         <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
             
-            <div class="flex items-center">
+            <div class="flex items-center space-x-4">
+                <button onclick="history.back()" class="text-gray-600 hover:text-pink-600 focus:outline-none transition duration-300" aria-label="Go back">
+                    <i class="fas fa-arrow-left text-xl"></i>
+                </button>
                 <a href="index.html" class="text-2xl font-bold text-gray-800">Vardhan Wears</a>
             </div>
             
@@ -325,13 +328,11 @@
         async function checkAuth() {
             const token = localStorage.getItem('token');
             const desktopDropdown = document.getElementById('desktop-menu-dropdown');
-            const mobileNav = document.getElementById('mobile-nav-links'); // Get mobile nav element
+            const mobileNav = document.getElementById('mobile-nav-links'); 
             
             let desktopLinks = '';
             let mobileLinks = '';
             
-            // --- === CHANGED: Desktop links now point to correct pages === ---
-            // === START OF CHANGES ===
             desktopLinks = `
                 <a href="shop.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Shop</a>
                 <a href="index.html#about" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">About</a>
@@ -339,7 +340,6 @@
                 <hr class="my-1 border-gray-100">
             `;
             
-            // --- === CHANGED: Mobile links now include parent categories and correct paths === ---
             mobileLinks = `
                 <a href="index.html" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Home</a>
                 <hr class="my-1 border-gray-100">
@@ -349,28 +349,23 @@
                 <a href="index.html#contact" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Contact</a>
                 <hr class="my-1 border-gray-100">
             `;
-            // === END OF CHANGES ===
-
 
             if (!token) {
-                window.location.href = 'login.html'; 
+                window.location.replace('login.html'); 
                 return;
             } 
             
             try {
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const res = await fetch(`${API_URL}/api/auth/me`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                // ===================================================================
                 if (!res.ok) {
                     localStorage.removeItem('token');
-                    window.location.href = 'login.html'; 
+                    window.location.replace('login.html'); 
                     return;
                 }
                 const user = await res.json();
                 
-                // Logout Button is correctly included here
                 desktopLinks += `
                     ${user.isAdmin ? '<a href="admin.html" class="block px-4 py-2 text-sm text-yellow-600 font-bold hover:bg-gray-100">Admin Panel</a>' : ''}
                     <button onclick="logout()" class="block px-4 py-2 text-sm text-red-600 font-bold hover:bg-red-50 w-full text-left">Logout</button>
@@ -384,17 +379,17 @@
             } catch (error) {
                 console.error('Auth check failed:', error);
                 localStorage.removeItem('token');
-                window.location.href = 'login.html'; 
+                window.location.replace('login.html'); 
             }
             
             desktopDropdown.innerHTML = desktopLinks;
-            mobileNav.innerHTML = mobileLinks; // Use correct variable
+            mobileNav.innerHTML = mobileLinks; 
         }
 
         function logout() {
             localStorage.removeItem('token'); 
-            localStorage.removeItem('vardhansCart'); // Also clear guest cart on logout
-            window.location.href = 'index.html'; 
+            localStorage.removeItem('vardhansCart'); 
+            window.location.replace('index.html'); 
         }
 
         // --- Profile Page Logic ---
@@ -416,7 +411,6 @@
 
 
         document.addEventListener('DOMContentLoaded', () => {
-            // PWA SERVICE WORKER 
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('/sw.js')
                     .then((registration) => {
@@ -526,13 +520,11 @@
                 const imageUrl = cloudinaryData.secure_url;
 
                 const token = localStorage.getItem('token');
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const backendResponse = await fetch(`${API_URL}/api/auth/profile-picture`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ profilePicture: imageUrl })
                 });
-                // ===================================================================
                 if (!backendResponse.ok) {
                     const errorData = await backendResponse.json();
                     throw new Error(errorData.message || 'Failed to update profile picture.');
@@ -572,13 +564,11 @@
 
             try {
                 const token = localStorage.getItem('token');
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const response = await fetch(`${API_URL}/api/auth/name`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ name: newName })
                 });
-                // ===================================================================
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(errorData.message || 'Failed to update name.');
@@ -613,13 +603,11 @@
 
             try {
                 const token = localStorage.getItem('token');
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const response = await fetch(`${API_URL}/api/auth/change-password`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ currentPassword, newPassword })
                 });
-                // ===================================================================
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(errorData.message || 'Failed to change password.');
@@ -632,18 +620,16 @@
             }
         }
 
-        // --- Order History Logic (API Path Fixes) ---
+        // --- Order History Logic ---
         async function loadAndStoreOrders() {
             const orderListContainer = document.getElementById('order-list');
             const token = localStorage.getItem('token');
             if (!token) { orderListContainer.innerHTML = '<p class="text-red-500">Could not find auth token.</p>'; return; }
 
             try {
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const res = await fetch(`${API_URL}/api/orders/myorders`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                // ===================================================================
                 if (!res.ok) throw new Error('Could not load your orders.');
                 
                 allUserOrders = await res.json();
@@ -823,18 +809,16 @@
             });
         }
 
-        // --- Address Management Logic (API Path Fixes) ---
+        // --- Address Management Logic ---
         async function loadSavedAddresses() {
             const addressList = document.getElementById('address-list');
             const showAddressBtn = document.getElementById('show-address-form-btn');
             const token = localStorage.getItem('token');
             if (!token) { return; }
             try {
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const res = await fetch(`${API_URL}/api/auth/addresses`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                // ===================================================================
                 if (!res.ok) throw new Error('Could not load addresses.');
                 const addresses = await res.json();
                 renderAddressList(addresses);
@@ -888,11 +872,9 @@
                 title.textContent = 'Edit Address';
                 try {
                     const token = localStorage.getItem('token');
-                    // =================== DEPLOYMENT FIX: Use API_URL ===================
                     const res = await fetch(`${API_URL}/api/auth/addresses`, {
                          headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    // ===================================================================
                     const addresses = await res.json();
                     const addressToEdit = addresses.find(addr => addr._id === addressId);
                     if (!addressToEdit) throw new Error('Address not found');
@@ -932,11 +914,9 @@
                 state: document.getElementById('addr-state').value,
                 country: document.getElementById('addr-country').value,
             };
-            // =================== DEPLOYMENT FIX: Use API_URL ===================
             const url = isEditMode 
                 ? `${API_URL}/api/auth/addresses/${addressId}` 
                 : `${API_URL}/api/auth/addresses`;
-            // ===================================================================
             const method = isEditMode ? 'PUT' : 'POST';
             try {
                 const token = localStorage.getItem('token');
@@ -971,12 +951,10 @@
             }
             try {
                 const token = localStorage.getItem('token');
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const res = await fetch(`${API_URL}/api/auth/addresses/${addressId}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                // ===================================================================
                 const data = await res.json();
                 if (!res.ok) {
                     throw new Error(data.message || 'Failed to delete address.');
@@ -989,7 +967,7 @@
             }
         }
 
-        // Pincode Auto-fill (Unchanged)
+        // Pincode Auto-fill
         let pincodeTimer;
         function handlePincode(event) {
             const pincode = event.target.value;
@@ -1024,7 +1002,7 @@
             }
         }
 
-        // Handle Order Repay (API Path Fix)
+        // Handle Order Repay
         async function handleRepay(event, orderId) {
             event.preventDefault(); 
             event.stopPropagation(); 
@@ -1034,12 +1012,10 @@
             repayButton.textContent = 'Processing...';
             try {
                 const token = localStorage.getItem('token');
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const res = await fetch(`${API_URL}/api/orders/${orderId}/repay`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                // ===================================================================
                 if (!res.ok) {
                     const err = await res.json();
                     throw new Error(err.message || 'Failed to create repayment order.');
@@ -1074,7 +1050,7 @@
             }
         }
 
-        // Handle Order Cancel (API Path Fix)
+        // Handle Order Cancel
         async function handleCancel(event, orderId) {
             event.preventDefault(); 
             event.stopPropagation(); 
@@ -1084,26 +1060,24 @@
             }
             try {
                 const token = localStorage.getItem('token');
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const res = await fetch(`${API_URL}/api/orders/${orderId}/cancel`, {
                     method: 'PUT',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                // ===================================================================
                 if (!res.ok) {
                     const err = await res.json();
                     throw new Error(err.message || 'Failed to cancel order.');
                 }
                 showMessage('Order successfully cancelled.', 'success');
-                localStorage.removeItem('vardhansCart'); // This seems out of place, but keeping it as it was.
-                loadAndStoreOrders(); // Refresh the order list
+                localStorage.removeItem('vardhansCart'); 
+                loadAndStoreOrders(); 
             } catch (error) {
                 console.error('Error cancelling order:', error);
                 showMessage(error.message, 'error');
             }
         }
 
-        // Verify Payment (API Path Fix)
+        // Verify Payment
         async function verifyPayment(paymentResponse, ourOrderId) {
             const token = localStorage.getItem('token'); 
             try {
@@ -1114,7 +1088,6 @@
                     order_id: ourOrderId 
                 };
 
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const verifyRes = await fetch(`${API_URL}/api/orders/verify`, {
                     method: 'POST',
                     headers: {
@@ -1123,19 +1096,18 @@
                     },
                     body: JSON.stringify(verificationData)
                 });
-                // ===================================================================
                 if (!verifyRes.ok) {
                     throw new Error('Payment verification failed.');
                 }
                 showMessage('Payment successful!', 'success');
-                loadAndStoreOrders(); // Refresh the order list
+                loadAndStoreOrders(); 
             } catch (error) {
                 console.error('Error verifying payment:', error);
                 showMessage(error.message, 'error');
             }
         }
 
-        // --- Message Box (Unchanged) ---
+        // --- Message Box ---
         function showMessage(message, type = 'success') {
             const messageBox = document.getElementById('message-box');
             const messageText = document.getElementById('message-text');
@@ -1153,7 +1125,6 @@
             }, 3000);
         }
 
-        // **MODIFIED: Make all global functions accessible**
         window.openAddressModal = openAddressModal;
         window.handleDeleteAddress = handleDeleteAddress;
         window.handleRepay = handleRepay;

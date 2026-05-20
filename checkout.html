@@ -56,8 +56,8 @@
         <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
             
             <div class="flex items-center space-x-4">
-                <button onclick="history.back()" class="text-gray-600 hover:text-gray-900 p-1 focus:outline-none" aria-label="Go back">
-                    <i class="fas fa-arrow-left fa-lg"></i>
+                <button onclick="history.back()" class="text-gray-600 hover:text-pink-600 focus:outline-none transition duration-300" aria-label="Go back">
+                    <i class="fas fa-arrow-left text-xl"></i>
                 </button>
                 <a href="index.html" class="text-2xl font-bold text-gray-800">Vardhan Wears</a>
             </div>
@@ -201,12 +201,9 @@
     </div>
 
     <script>
-        // =================== DEPLOYMENT FIX: Add API_URL ===================
         const API_URL = 'https://vardhan-wears-api.onrender.com';
-        // ===================================================================
 
-        // --- Global State ---
-        let cart = []; // This will be the *validated* cart
+        let cart = []; 
         let subtotal = 0;
         let shippingCost = 0; 
         let total = 0;
@@ -214,7 +211,6 @@
         let currentUser = null;
         let savedAddresses = []; 
 
-        // --- Menu Toggles ---
         const menuBtn = document.getElementById('menu-btn');
         const mobileNavLinks = document.getElementById('mobile-nav-links'); 
         menuBtn.addEventListener('click', () => { mobileNavLinks.classList.toggle('hidden'); });
@@ -227,14 +223,9 @@
                 }
             }
         }
-        // Make sure it's globally accessible
         window.toggleDesktopMenu = toggleDesktopMenu;
 
-        // --- Auth & Initial Load ---
         document.addEventListener('DOMContentLoaded', async () => {
-            // ===============================================
-            // === PWA SERVICE WORKER REGISTRATION START ===
-            // ===============================================
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('/sw.js')
                     .then((registration) => {
@@ -244,9 +235,6 @@
                         console.error('Service Worker registration failed:', error);
                     });
             }
-            // ===============================================
-            // === PWA SERVICE WORKER REGISTRATION END ===
-            // ===============================================
 
             const authed = await checkAuth();
             if (authed) {
@@ -256,13 +244,11 @@
 
         async function checkAuth() {
             const desktopDropdown = document.getElementById('desktop-menu-dropdown');
-            const mobileNav = document.getElementById('mobile-nav-links'); // Get mobile nav
+            const mobileNav = document.getElementById('mobile-nav-links'); 
             
             let desktopLinks = '';
             let mobileLinks = '';
 
-            // --- === CHANGED: Desktop links now point to correct pages === ---
-            // === START OF CHANGES ===
             desktopLinks = `
                 <a href="shop.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Shop</a>
                 <a href="index.html#about" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">About</a>
@@ -270,7 +256,6 @@
                 <hr class="my-1 border-gray-100">
             `;
             
-            // --- === CHANGED: Mobile links now include parent categories and correct paths === ---
             mobileLinks = `
                 <a href="index.html" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Home</a>
                 <hr class="my-1 border-gray-100">
@@ -280,20 +265,17 @@
                 <a href="index.html#contact" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Contact</a>
                 <hr class="my-1 border-gray-100">
             `;
-            // === END OF CHANGES ===
-
 
             if (!token) {
                 showMessage('You must be logged in to check out.', 'error');
-                setTimeout(() => window.location.href = `login.html?redirect=checkout.html`, 2000);
+                // FIXED: Use replace to prevent history loop
+                setTimeout(() => window.location.replace(`login.html?redirect=checkout.html`), 2000);
                 return false;
             }
             try {
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const res = await fetch(`${API_URL}/api/auth/me`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                // ===================================================================
                 if (!res.ok) {
                     localStorage.removeItem('token');
                     checkAuth(); 
@@ -302,7 +284,6 @@
                 currentUser = await res.json();
                 document.getElementById('fullName').value = currentUser.name || '';
                 
-                // --- Links for logged-in user (Logout is intentionally omitted here) ---
                 desktopLinks += `
                         <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-blue-600 font-medium hover:bg-gray-100">
                             <i class="fas fa-user-circle w-5 mr-2"></i> My Profile
@@ -315,7 +296,6 @@
                         </a>
                         ${currentUser.isAdmin ? '<a href="admin.html" class="block py-2 px-6 text-sm text-yellow-600 font-bold hover:bg-gray-100">Admin Panel</a>' : ''}
                 `;
-                // --- End of links ---
 
             } catch (error) {
                 console.error('Auth check failed:', error);
@@ -324,24 +304,18 @@
                 return false;
             }
             desktopDropdown.innerHTML = desktopLinks;
-            mobileNav.innerHTML = mobileLinks; // Use correct variable
+            mobileNav.innerHTML = mobileLinks; 
             return true;
         }
-
-        // --- REMOVED: logout() function is no longer needed on this page ---
-
-        // --- V3.1 Checkout Initialization & Validation ---
 
         async function initializeCheckout() {
             const loader = document.getElementById('page-loader');
             const content = document.getElementById('checkout-content');
             
             try {
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const res = await fetch(`${API_URL}/api/cart`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                // ===================================================================
 
                 if (!res.ok) {
                     throw new Error('Failed to fetch your cart. Please try again.');
@@ -355,13 +329,15 @@
                 
                 if (cart.length === 0) {
                       showMessage('Your cart is empty. Redirecting to shopping.', 'error');
-                      setTimeout(() => window.location.href = 'shop.html', 2000); // FIXED: Point to shop.html
+                      // FIXED: Use replace to prevent history loop
+                      setTimeout(() => window.location.replace('shop.html'), 2000); 
                       return;
                 }
                 
                 if (!hasSufficientStock) {
                     showMessage('Some items in your cart have quantity issues. Redirecting...', 'error');
-                    setTimeout(() => window.location.href = 'cart.html', 3000);
+                    // FIXED: Use replace to prevent history loop
+                    setTimeout(() => window.location.replace('cart.html'), 3000);
                     return;
                 }
                 
@@ -371,7 +347,7 @@
 
                 loader.style.display = 'none';
                 content.classList.remove('hidden');
-                document.getElementById('pay-now-btn').disabled = false; // Enable payment
+                document.getElementById('pay-now-btn').disabled = false; 
 
             } catch (error) {
                 console.error('Checkout initialization failed:', error);
@@ -410,8 +386,6 @@
             document.getElementById('shipping-note').style.display = subtotal > 0 ? 'block' : 'none';
         }
 
-        // --- Address & Pincode Logic ---
-
         function setupFormListeners() {
             document.getElementById('pay-now-btn').addEventListener('click', processPayment);
             document.getElementById('postalCode').addEventListener('input', handlePincode);
@@ -424,11 +398,9 @@
         async function loadSavedAddresses() {
             const addressList = document.getElementById('saved-address-list');
             try {
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const res = await fetch(`${API_URL}/api/auth/addresses`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                // ===================================================================
                 if (!res.ok) throw new Error('Could not load addresses.');
                 
                 savedAddresses = await res.json();
@@ -505,11 +477,9 @@
             }
         }
 
-        // --- Payment Logic ---
         async function processPayment() {
             let shippingAddress = null;
 
-            // 1. Determine which address to use
             const selectedAddressId = document.querySelector('input[name="addressSelection"]:checked')?.value;
             const isAddNew = document.getElementById('add-new-address-radio').checked;
             
@@ -537,13 +507,11 @@
                 const saveAddressCheckbox = document.getElementById('save-address-checkbox');
                 if (saveAddressCheckbox.checked) {
                     try {
-                        // =================== DEPLOYMENT FIX: Use API_URL ===================
                         const saveRes = await fetch(`${API_URL}/api/auth/addresses`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                             body: JSON.stringify(shippingAddress)
                         });
-                        // ===================================================================
                         if (!saveRes.ok) {
                             const err = await saveRes.json();
                             showMessage(`Could not save new address: ${err.message}`, 'error');
@@ -558,7 +526,6 @@
                 return;
             }
 
-            // 2. Prepare Order Data (using the *validated* cart)
             const orderItems = cart.map(item => ({
                 product: item.product, 
                 name: item.name,
@@ -575,14 +542,11 @@
             payButton.textContent = 'Processing...';
 
             try {
-                // 3. Create Order in Backend
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const createOrderRes = await fetch(`${API_URL}/api/orders`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify(orderData)
                 });
-                // ===================================================================
 
                 if (!createOrderRes.ok) {
                     const err = await createOrderRes.json();
@@ -591,7 +555,6 @@
                 
                 const { orderId, razorpayOrderId, amount, currency, key } = await createOrderRes.json();
                 
-                // 4. Open Razorpay Modal
                 const options = {
                     key: key,
                     amount: amount,
@@ -600,7 +563,6 @@
                     description: `Order ID: ${orderId}`,
                     order_id: razorpayOrderId,
                     handler: async function (response) {
-                        // 5. Payment was successful, now verify it
                         await verifyPayment(response, orderId);
                     },
                     prefill: {
@@ -619,7 +581,7 @@
                     payButton.textContent = 'Pay Now';
                 });
 
-                rzp.open(); // Show the payment modal
+                rzp.open(); 
 
             } catch (error) {
                 console.error('Error processing payment:', error);
@@ -634,17 +596,15 @@
                 const verificationData = {
                     razorpay_order_id: paymentResponse.razorpay_order_id,
                     razorpay_payment_id: paymentResponse.razorpay_payment_id,
-                    razorpay_signature: paymentResponse.razorpay_signature, // Corrected typo from user's code
+                    razorpay_signature: paymentResponse.razorpay_signature, 
                     order_id: ourOrderId 
                 };
 
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const verifyRes = await fetch(`${API_URL}/api/orders/verify`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify(verificationData)
                 });
-                // ===================================================================
 
                 if (!verifyRes.ok) {
                     const err = await verifyRes.json();
@@ -653,15 +613,14 @@
 
                 showMessage('Payment successful! Redirecting...', 'success');
                 
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 await fetch(`${API_URL}/api/cart/clear`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                // ===================================================================
                 
                 setTimeout(() => {
-                    window.location.href = `order-details.html?id=${ourOrderId}`; 
+                    // FIXED: Use replace to prevent history loop
+                    window.location.replace(`order-details.html?id=${ourOrderId}`); 
                 }, 2000);
 
             } catch (error) {
@@ -672,7 +631,6 @@
             }
         }
 
-        // --- Message Box ---
         function showMessage(message, type = 'success') {
             const messageBox = document.getElementById('message-box');
             const messageText = document.getElementById('message-text');

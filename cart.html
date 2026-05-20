@@ -81,9 +81,9 @@
     <header class="bg-white shadow-md sticky top-0 z-50">
         <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
             
-            <div class="flex items-center">
-                <button onclick="history.back()" class="flex items-center justify-center w-10 h-10 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full focus:outline-none mr-2" aria-label="Go back">
-                    <i class="fas fa-arrow-left"></i>
+            <div class="flex items-center space-x-4">
+                <button onclick="history.back()" class="text-gray-600 hover:text-pink-600 focus:outline-none transition duration-300" aria-label="Go back">
+                    <i class="fas fa-arrow-left text-xl"></i>
                 </button>
                 <a href="index.html" class="text-2xl font-bold text-gray-800">Vardhan Wears</a>
             </div>
@@ -178,16 +178,12 @@
     </div>
 
     <script>
-        // =================== DEPLOYMENT FIX: Add API_URL ===================
         const API_URL = 'https://vardhan-wears-api.onrender.com';
-        // ===================================================================
 
-        // --- Global State ---
         const token = localStorage.getItem('token');
-        let currentCart = []; // The *true* state of the cart (either from API or validated localStorage)
-        let debounceTimer; // Timer for manual quantity input
+        let currentCart = []; 
+        let debounceTimer; 
 
-        // --- UI Element References ---
         const loaderEl = document.getElementById('cart-loader');
         const emptyEl = document.getElementById('cart-empty');
         const containerEl = document.getElementById('cart-container');
@@ -201,7 +197,6 @@
         const checkoutBtn = document.getElementById('checkout-btn');
         const warningMessage = document.getElementById('cart-warning-message');
 
-        // --- Menu Toggles & Auth Logic ---
         const menuBtn = document.getElementById('menu-btn');
         const mobileNavLinks = document.getElementById('mobile-nav-links'); 
         menuBtn.addEventListener('click', () => { mobileNavLinks.classList.toggle('hidden'); });
@@ -214,17 +209,15 @@
                 }
             }
         }
-        // Make sure it's globally accessible
         window.toggleDesktopMenu = toggleDesktopMenu;
 
         async function checkAuth() {
             const desktopDropdown = document.getElementById('desktop-menu-dropdown');
-            const mobileNav = document.getElementById('mobile-nav-links'); // Get mobile nav
+            const mobileNav = document.getElementById('mobile-nav-links'); 
             
             let desktopLinks = '';
             let mobileLinks = '';
 
-            // --- === CHANGED: Desktop links now point to "Shop" === ---
             desktopLinks = `
                 <a href="shop.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Shop</a>
                 <a href="index.html#about" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">About</a>
@@ -232,7 +225,6 @@
                 <hr class="my-1 border-gray-100">
             `;
             
-            // --- === CHANGED: Mobile links removed parent categories === ---
             mobileLinks = `
                 <a href="index.html" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Home</a>
                 <a href="shop.html" class="block py-2 px-6 text-sm text-gray-700 hover:bg-gray-100">Shop</a>
@@ -262,7 +254,6 @@
                     }
                     const user = await res.json();
                     
-                    // --- === REMOVED LOGOUT BUTTON === ---
                     desktopLinks += `
                         <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-blue-600 font-medium hover:bg-gray-100">
                             <i class="fas fa-user-circle w-5 mr-2"></i> My Profile
@@ -275,7 +266,6 @@
                         </a>
                         ${user.isAdmin ? '<a href="admin.html" class="block py-2 px-6 text-sm text-yellow-600 font-bold hover:bg-gray-100">Admin Panel</a>' : ''}
                     `;
-                    // --- === END OF REMOVAL === ---
 
                 } catch (error) {
                     console.error('Auth check failed:', error);
@@ -284,17 +274,10 @@
                 }
             }
             desktopDropdown.innerHTML = desktopLinks;
-            mobileNav.innerHTML = mobileLinks; // Use correct variable
+            mobileNav.innerHTML = mobileLinks; 
         }
 
-        // --- REMOVED: logout() function ---
-
-        // --- V3.1 "Smart" Cart Logic ---
-        
         document.addEventListener('DOMContentLoaded', () => {
-            // ===============================================
-            // === PWA SERVICE WORKER REGISTRATION START ===
-            // ===============================================
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('/sw.js')
                     .then((registration) => {
@@ -304,20 +287,14 @@
                         console.error('Service Worker registration failed:', error);
                     });
             }
-            // ===============================================
-            // === PWA SERVICE WORKER REGISTRATION END ===
-            // ===============================================
 
             checkAuth();
-            loadCart(); // This is the main "dispatcher" function
+            loadCart(); 
             checkoutBtn.addEventListener('click', () => {
                 window.location.href = 'checkout.html';
             });
         });
 
-        /**
-         * Main "dispatcher" function.
-         */
         function loadCart() {
             if (token) {
                 loaderEl.classList.remove('hidden');
@@ -330,16 +307,11 @@
             }
         }
 
-        /**
-         * Loads cart from the API for a LOGGED-IN user.
-         */
         async function loadLoggedInCart() {
             try {
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const res = await fetch(`${API_URL}/api/cart`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                // ===================================================================
                 if (!res.ok) {
                     throw new Error('Failed to fetch your cart from the server.');
                 }
@@ -368,9 +340,6 @@
             }
         }
 
-        /**
-         * Loads cart from localStorage for a GUEST.
-         */
         async function loadGuestCart() {
             const guestCart = JSON.parse(localStorage.getItem('vardhansCart')) || [];
 
@@ -380,13 +349,11 @@
             }
 
             try {
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const res = await fetch(`${API_URL}/api/cart/validate-guest`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ guestCart: guestCart })
                 });
-                // ===================================================================
 
                 if (!res.ok) {
                     throw new Error('Failed to validate cart with server.');
@@ -396,7 +363,7 @@
                 
                 currentCart = validatedItems.map(item => ({
                     ...item,
-                    product: item.productId // Standardize on `product`
+                    product: item.productId 
                 }));
 
                 const guestCartToSave = validatedItems.map(item => ({
@@ -417,7 +384,7 @@
                 showMessage(error.message, 'error');
                 currentCart = guestCart.map(item => ({ 
                     ...item, 
-                    product: item.productId, // Standardize
+                    product: item.productId,
                     realStock: 0, 
                     isOutOfStock: true, 
                     hasSufficientStock: false 
@@ -426,9 +393,6 @@
             }
         }
 
-        /**
-         * Renders the cart UI based on the validated `currentCart` data.
-         */
         function renderCart(items) {
             if (items.length === 0) {
                 showCartEmpty();
@@ -511,9 +475,6 @@
             containerEl.style.display = 'grid';
         }
 
-        /**
-         * Updates the floating order summary box.
-         */
         function updateSummary(subtotal, canCheckout) {
             const shipping = (subtotal > 0 && subtotal < 2000) ? 50.00 : 0.00;
             const total = subtotal + shipping;
@@ -541,8 +502,6 @@
                 }
             }
         }
-
-        // --- "Smart" Action Functions ---
 
         function smartUpdateQuantity(product, size, colorName, change) {
             const item = currentCart.find(i => i.product === product && i.size === size && i.colorName === colorName);
@@ -600,11 +559,8 @@
             }
         }
 
-        // --- API & localStorage Helper Functions ---
-
         async function handleLoggedInUpdate(product, size, colorName, newQuantity) {
             try {
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const res = await fetch(`${API_URL}/api/cart/update`, {
                     method: 'PUT',
                     headers: {
@@ -613,7 +569,6 @@
                     },
                     body: JSON.stringify({ product, size, colorName, newQuantity })
                 });
-                // ===================================================================
                 if (!res.ok) {
                     const err = await res.json();
                     throw new Error(err.message || 'Failed to update item.');
@@ -628,7 +583,6 @@
 
         async function handleLoggedInRemove(product, size, colorName) {
             try {
-                // =================== DEPLOYMENT FIX: Use API_URL ===================
                 const res = await fetch(`${API_URL}/api/cart/remove`, {
                     method: 'DELETE',
                     headers: {
@@ -637,7 +591,6 @@
                     },
                     body: JSON.stringify({ product, size, colorName })
                 });
-                // ===================================================================
                 if (!res.ok) {
                     throw new Error('Failed to remove item.');
                 }
@@ -667,14 +620,11 @@
             loadGuestCart();
         }
 
-        // --- UI State Helpers ---
-
         function showCartEmpty() {
             loaderEl.style.display = 'none';
             containerEl.style.display = 'none';
             emptyEl.style.display = 'block';
             
-            // --- FIXED: Update "Continue Shopping" link to point to shop.html ---
             const continueShoppingBtn = emptyEl.querySelector('a');
             if (continueShoppingBtn) {
                 continueShoppingBtn.href = 'shop.html';
@@ -689,7 +639,6 @@
             emptyEl.querySelector('a').style.display = 'none';
         }
 
-        // --- Message Box ---
         function showMessage(message, type = 'error') {
             const messageBox = document.getElementById('message-box');
             const messageText = document.getElementById('message-text');
@@ -701,7 +650,6 @@
             }, 3000);
         }
 
-        // --- Make functions globally accessible for onclick ---
         window.toggleDesktopMenu = toggleDesktopMenu;
         window.smartUpdateQuantity = smartUpdateQuantity;
         window.smartSetQuantity = smartSetQuantity;
